@@ -201,14 +201,15 @@ body.battle-active #xpOuter{display:flex;align-items:center;gap:8px}
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
 }
-</style>
 
-<link rel="manifest" href="manifest.json">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="無盡弓域V25">
-<link rel="apple-touch-icon" href="icons/icon-180.png">
-<script>if("serviceWorker" in navigator && location.protocol.startsWith("http")){window.addEventListener("load",()=>navigator.serviceWorker.register("service-worker.js").catch(()=>{}));}</script>
+/* 使用者指定：虛擬搖桿恢復左下角固定位置；保留目前透明度 */
+@media (max-width: 699px) {
+  #stickBase { left: 16px !important; right: auto !important; transform: none !important; bottom: calc(82px + env(safe-area-inset-bottom)) !important; }
+}
+@media (min-width: 700px) {
+  #stickBase { left: 25px !important; right: auto !important; transform: none !important; bottom: 35px !important; }
+}
+</style>
 </head>
 <body>
 <canvas id="game"></canvas>
