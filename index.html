@@ -1449,7 +1449,7 @@ const BowAudio=(()=>{
  const $a=id=>document.getElementById(id);
  function loadPrefs(){try{const p=JSON.parse(localStorage.getItem('endlessBowAudioPrefsV1')||'{}');if(Number.isFinite(p.bgmVol))bgmVol=Math.max(0,Math.min(1,p.bgmVol));if(Number.isFinite(p.sfxVol))sfxVol=Math.max(0,Math.min(1,p.sfxVol));musicOn=true;if(typeof p.sfxOn==='boolean')sfxOn=p.sfxOn;}catch(e){}}
  function savePrefs(){try{localStorage.setItem('endlessBowAudioPrefsV1',JSON.stringify({bgmVol,sfxVol,musicOn,sfxOn}));}catch(e){}}
- function init(){if(ac)return true;const AC=window.AudioContext||window.webkitAudioContext;if(!AC){if($a('audioHint'))$a('audioHint').textContent='此瀏覽器不支援 Web Audio';return false;}try{ac=new AC();master=ac.createGain();bgmGain=ac.createGain();sfxGain=ac.createGain();bgmGain.gain.value=0;sfxGain.gain.value=sfxOn?sfxVol:0;bgmGain.connect(master);sfxGain.connect(master);master.connect(ac.destination);return true;}catch(e){return false;}}
+ function init(){if(ac&&ac.state!=='closed')return true;if(ac&&ac.state==='closed'){ac=null;master=null;bgmGain=null;sfxGain=null;}const AC=window.AudioContext||window.webkitAudioContext;if(!AC){if($a('audioHint'))$a('audioHint').textContent='此瀏覽器不支援 Web Audio';return false;}try{ac=new AC();master=ac.createGain();bgmGain=ac.createGain();sfxGain=ac.createGain();bgmGain.gain.value=0;sfxGain.gain.value=sfxOn?sfxVol:0;bgmGain.connect(master);sfxGain.connect(master);master.connect(ac.destination);return true;}catch(e){return false;}}
  function unlock(){
   ensureBgm();
   try{
@@ -1478,7 +1478,39 @@ const BowAudio=(()=>{
  function stopMusic(){/* Background music intentionally continues through menus, battle, pause, victory and defeat. */}
  function setBgm(v){bgmVol=Math.max(0,Math.min(1,v));if(bgmAudio)bgmAudio.volume=musicOn?bgmVol:0;savePrefs();syncUi();}
  function setSfx(v){sfxVol=Math.max(0,Math.min(1,v));if(sfxGain&&ac)sfxGain.gain.setTargetAtTime(sfxOn?sfxVol:0,ac.currentTime,.04);savePrefs();syncUi();}
- function toggleBgm(){musicOn=!musicOn;if(bgmAudio)bgmAudio.volume=musicOn?bgmVol:0;if(musicOn&&started&&bgmAudio&&bgmAudio.paused)bgmAudio.play().catch(()=>{});savePrefs();syncUi();updateMusicButtons();}
+ function toggleBgm(){
+  // iOS Safari fix: actually pause when muted, and restart playback synchronously
+  // inside the user's button gesture when music is turned back on.
+  musicOn=!musicOn;
+  ensureBgm();
+  if(!musicOn){
+   try{bgmAudio.pause();}catch(e){}
+   musicPlaying=false;
+   if(musicTimer){clearTimeout(musicTimer);musicTimer=0;}
+  }else{
+   bgmAudio.volume=bgmVol;
+   try{init();}catch(e){}
+   let resumePromise=Promise.resolve();
+   if(ac&&ac.state==='suspended'){
+    try{resumePromise=ac.resume().catch(()=>{});}catch(e){}
+   }else if(ac&&ac.state==='closed'){
+    // A closed iOS AudioContext cannot be resumed; allow init() to recreate it.
+    ac=null;master=null;bgmGain=null;sfxGain=null;
+    try{init();if(ac&&ac.state==='suspended')resumePromise=ac.resume().catch(()=>{});}catch(e){}
+   }
+   // Do not await before calling play(): Safari requires the call in the user gesture.
+   let playPromise;
+   try{playPromise=bgmAudio.play();}catch(e){playPromise=Promise.reject(e);}
+   started=true;
+   Promise.resolve(playPromise).then(()=>Promise.resolve(resumePromise)).then(()=>{
+    if(musicOn){musicPlaying=true;}
+   }).catch(()=>{
+    musicPlaying=false;
+    // Keep the toggle enabled so the next deliberate tap can retry playback.
+   });
+  }
+  savePrefs();syncUi();updateMusicButtons();
+ }
  function toggleSfx(){sfxOn=!sfxOn;if(sfxGain&&ac)sfxGain.gain.setTargetAtTime(sfxOn?sfxVol:0,ac.currentTime,.04);savePrefs();syncUi();}
  function syncUi(){if(!$a('bgmVolume'))return;$a('bgmVolume').value=Math.round(bgmVol*100);$a('sfxVolume').value=Math.round(sfxVol*100);$a('bgmVolumeValue').textContent=Math.round(bgmVol*100)+'%';$a('sfxVolumeValue').textContent=Math.round(sfxVol*100)+'%';$a('bgmMute').textContent=musicOn?'♫ 音樂開':'♫ 音樂關';$a('sfxMute').textContent=sfxOn?'⚔ 音效開':'⚔ 音效關';}
  function sfx(name){if(!ac||!started||!sfxOn||sfxVol<=0)return;const now=performance.now(),limits={attack:95,hit:125,hurt:500,death:1800,fail:1800,win:1800,level:300,ultimate:700,pause:120,resume:120};if(now-(lastSfx[name]||0)<(limits[name]||180))return;lastSfx[name]=now;switch(name){case'attack':tone(540,.075,'triangle',.055,0,-180);break;case'hit':tone(310,.065,'triangle',.065,0,-90);tone(185,.055,'sine',.025,.018,-35);break;case'hurt':tone(170,.19,'sawtooth',.11,0,-85);tone(95,.2,'sine',.09,.02,-35);break;case'death':tone(190,.5,'sawtooth',.12,0,-110);tone(130,.65,'triangle',.10,.08,-75);tone(82,.85,'sine',.09,.18,-35);break;case'fail':tone(220,.55,'triangle',.085,0,-70);tone(164.81,.75,'triangle',.08,.22,-55);tone(110,.95,'sine',.075,.45,-25);break;case'win':tone(392,.22,'triangle',.09,0,60);tone(523.25,.25,'triangle',.09,.14,80);tone(659.25,.35,'triangle',.1,.3,90);tone(783.99,.65,'sine',.08,.48,0);break;case'level':tone(440,.13,'triangle',.08);tone(587.33,.17,'triangle',.08,.11);tone(783.99,.28,'sine',.07,.22);break;case'ultimate':[110,164.81,220,329.63,440].forEach((f,i)=>tone(f,.5,'sawtooth',.065,i*.055,f*.4));break;case'pause':tone(620,.07,'sine',.06);tone(460,.1,'sine',.05,.06);break;case'resume':tone(460,.08,'sine',.06);tone(690,.13,'sine',.06,.07);break;case'skill':tone(523.25,.12,'triangle',.065);tone(659.25,.13,'triangle',.07,.08);break;}}
