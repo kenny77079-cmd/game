@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#111827">
-<title>無盡弓域 V62｜D2技能光影整合版</title>
+<title>無盡弓域 V62-3｜斯卡迪極寒箭雨光影修復整合版</title>
 <!-- V46：修正 V41 操作區按鈕間意外輸出的字面 \n 字元；保留 V41 技能聯動及 V40 時間排版。 -->
 <style>
 :root{--bg:#101827;--panel:#182438;--gold:#ffd166;--mint:#74f2ce;--red:#ff6b6b;--text:#f5f7fb;--muted:#aebbd0}
@@ -269,7 +269,7 @@ body.battle-active #xpOuter{display:grid!important;grid-template-columns:28px mi
 <div id="toast"></div>
 <div class="overlay" id="startScreen">
  <div class="panel">
-  <div class="eyebrow">無盡弓域 V62</div>
+  <div class="eyebrow">無盡弓域 V62-3</div>
   <div style="display:flex;justify-content:center;margin:8px 0 4px"><button class="btn secondary" id="musicToggleMain" type="button" style="padding:8px 16px">♫ 背景音樂：開</button></div>
   <h1>無盡弓域</h1>
   
@@ -811,14 +811,52 @@ function triggerSpecialEvent(){
   }toast('🚨 怪潮來襲！撐住！');
  }
 }
-// D2 V15-1 frost-rain VFX: visual-only sprites, independent from hitboxes/damage.const skadiFrostRainVfx=[];function spawnSkadiFrostArrow(x,y,isHit){ if(skadiFrostRainVfx.length>180)skadiFrostRainVfx.splice(0,skadiFrostRainVfx.length-180); skadiFrostRainVfx.push({x,y,life:.29,maxLife:.29,drift:(Math.random()-.5)*15,hit:isHit,seed:Math.random()*6.28});}function drawSkadiFrostRainVfx(){ for(const f of skadiFrostRainVfx){  const progress=1-f.life/f.maxLife;  const y=f.y-65*(1-progress),x=f.x+f.drift*(1-progress);  ctx.save();ctx.translate(x,y);ctx.rotate(Math.PI/2+.16);  ctx.globalAlpha=Math.min(1,f.life/.08);  ctx.shadowColor='#4bdcff';ctx.shadowBlur=10;  // Black-metal shaft, crystal arrowhead, icy fletching, luminous frost trail.  ctx.strokeStyle='#17283b';ctx.lineWidth=3.4;ctx.beginPath();ctx.moveTo(-22,0);ctx.lineTo(13,0);ctx.stroke();  ctx.strokeStyle='#b9f5ff';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(-19,-.6);ctx.lineTo(12,-.6);ctx.stroke();  ctx.fillStyle='#8cecff';ctx.beginPath();ctx.moveTo(21,0);ctx.lineTo(10,-5);ctx.lineTo(13,0);ctx.lineTo(10,5);ctx.closePath();ctx.fill();  ctx.strokeStyle='#b6faff';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(-17,0);ctx.lineTo(-23,-6);ctx.moveTo(-17,0);ctx.lineTo(-23,6);ctx.stroke();  ctx.globalAlpha*=.5;ctx.strokeStyle='#55caff';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-40,0);ctx.lineTo(-23,0);ctx.stroke();  ctx.restore();  if(progress>.70){ctx.save();ctx.globalAlpha=(progress-.70)/.30*.65;ctx.strokeStyle='#9fefff';ctx.lineWidth=1.5;ctx.shadowColor='#6fdcff';ctx.shadowBlur=12;ctx.beginPath();ctx.ellipse(f.x,f.y,7+progress*7,3+progress*4,0,0,Math.PI*2);ctx.stroke();ctx.restore();} }}
+// D2 V15-1 frost-rain VFX: visual-only sprites, independent from hitboxes/damage.
 const skadiFrostRainVfx=[];
-function spawnSkadiFrostArrow(x,y,isHit){if(skadiFrostRainVfx.length>180)skadiFrostRainVfx.shift();skadiFrostRainVfx.push({x,y,life:.29,maxLife:.29,hit:isHit});}
-function drawSkadiFrostRainVfx(){for(const f of skadiFrostRainVfx){ctx.save();ctx.globalAlpha=Math.max(0,Math.min(1,f.life/.29));ctx.strokeStyle="#9fefff";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(f.x-8,f.y-25);ctx.lineTo(f.x,f.y);ctx.lineTo(f.x+8,f.y-25);ctx.stroke();ctx.restore();}}
+function spawnSkadiFrostArrow(x,y,isHit){
+ if(skadiFrostRainVfx.length>180)skadiFrostRainVfx.splice(0,skadiFrostRainVfx.length-180);
+ skadiFrostRainVfx.push({x,y,life:.29,maxLife:.29,drift:(Math.random()-.5)*15,hit:isHit,seed:Math.random()*6.28});
+}
+function drawSkadiFrostRainVfx(){
+ for(const f of skadiFrostRainVfx){
+  const progress=1-f.life/f.maxLife;
+  const y=f.y-65*(1-progress),x=f.x+f.drift*(1-progress);
+  ctx.save();ctx.translate(x,y);ctx.rotate(Math.PI/2+.16);
+  ctx.globalAlpha=Math.min(1,f.life/.08);
+  ctx.shadowColor='#4bdcff';ctx.shadowBlur=10;
+  // Black-metal shaft, crystal arrowhead, icy fletching, luminous frost trail.
+  ctx.strokeStyle='#17283b';ctx.lineWidth=3.4;ctx.beginPath();ctx.moveTo(-22,0);ctx.lineTo(13,0);ctx.stroke();
+  ctx.strokeStyle='#b9f5ff';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(-19,-.6);ctx.lineTo(12,-.6);ctx.stroke();
+  ctx.fillStyle='#8cecff';ctx.beginPath();ctx.moveTo(21,0);ctx.lineTo(10,-5);ctx.lineTo(13,0);ctx.lineTo(10,5);ctx.closePath();ctx.fill();
+  ctx.strokeStyle='#b6faff';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(-17,0);ctx.lineTo(-23,-6);ctx.moveTo(-17,0);ctx.lineTo(-23,6);ctx.stroke();
+  ctx.globalAlpha*=.5;ctx.strokeStyle='#55caff';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-40,0);ctx.lineTo(-23,0);ctx.stroke();
+  ctx.restore();
+  if(progress>.70){ctx.save();ctx.globalAlpha=(progress-.70)/.30*.65;ctx.strokeStyle='#9fefff';ctx.lineWidth=1.5;ctx.shadowColor='#6fdcff';ctx.shadowBlur=12;ctx.beginPath();ctx.ellipse(f.x,f.y,7+progress*7,3+progress*4,0,0,Math.PI*2);ctx.stroke();ctx.restore();}
+ }
+}
 function update(dt){for(let i=skadiFrostRainVfx.length-1;i>=0;i--){skadiFrostRainVfx[i].life-=dt;if(skadiFrostRainVfx[i].life<=0)skadiFrostRainVfx.splice(i,1);}if(elapsed+dt>=1200){elapsed=1200;updateHud();endRun(true);return;}elapsed+=dt;while(rapidShotQueue.length&&rapidShotQueue[0].at<=elapsed){const shot=rapidShotQueue.shift();shot.fire()}spawnClock+=dt;attackClock-=dt;if(player.dragonUltTimer>0)player.dragonUltTimer=Math.max(0,player.dragonUltTimer-dt);
  if(player.dragonUltShake>0)player.dragonUltShake=Math.max(0,player.dragonUltShake-dt);
  if(player.dragonUltBurst>0)player.dragonUltBurst=Math.max(0,player.dragonUltBurst-dt);
-if(player.skadiUltTimer>0){player.skadiUltTimer=Math.max(0,player.skadiUltTimer-dt);player.skadiUltPulse=(player.skadiUltPulse||0)-dt;while(player.skadiUltPulse<=0&&player.skadiUltTimer>0){player.skadiUltPulse+=.25;const targets=enemies.filter(e=>e.hp>0).sort((a,b)=>Math.hypot(a.x-player.x,a.y-player.y)-Math.hypot(b.x-player.x,b.y-player.y)).slice(0,6);for(const e of targets){const d=player.atk*1.6;e.hp-=d;e.hit=.15;if(e.type!=='boss'&&e.type!=='megaBoss'){e.iceSlowTimer=Math.max(e.iceSlowTimer||0,2);e.iceSlow=Math.max(e.iceSlow||0,.45)}showDamageNumber(e.x,e.y-e.r,d,false);burst(e.x,e.y,'#7dd3fc',2)}if(targets.length)rewardDefeatedEnemies();}}
+if(player.skadiUltTimer>0){
+ // D2 V15-1: 16 distinct 0.25s frost-arrow-rain pulses over the original 4 seconds.
+ // Damage and target count are unchanged; falling arrows are cosmetic only.
+ player.skadiUltTimer=Math.max(0,player.skadiUltTimer-dt);
+ player.skadiUltPulse=(player.skadiUltPulse||0)-dt;
+ while(player.skadiUltPulse<=0&&player.skadiUltTimer>0){
+  player.skadiUltPulse+=.25;
+  const targets=enemies.filter(e=>e.hp>0).sort((a,b)=>Math.hypot(a.x-player.x,a.y-player.y)-Math.hypot(b.x-player.x,b.y-player.y)).slice(0,6);
+  for(const e of targets){
+   const d=player.atk*1.6;e.hp-=d;e.hit=.15;
+   if(e.type!=='boss'&&e.type!=='megaBoss'){e.iceSlowTimer=Math.max(e.iceSlowTimer||0,2);e.iceSlow=Math.max(e.iceSlow||0,.45)}
+   showDamageNumber(e.x,e.y-e.r,d,false);burst(e.x,e.y,'#7dd3fc',2);
+   spawnSkadiFrostArrow(e.x,e.y,true);
+  }
+  if(targets.length)rewardDefeatedEnemies();
+  // Without nearby targets, continue displaying the rain for all four seconds.
+  if(!targets.length){for(let i=0;i<6;i++){const angle=Math.random()*Math.PI*2,dist=45+Math.random()*120;spawnSkadiFrostArrow(player.x+Math.cos(angle)*dist,player.y+Math.sin(angle)*dist,false);}}
+  else {for(let i=0;i<3;i++){const angle=Math.random()*Math.PI*2,dist=35+Math.random()*80;spawnSkadiFrostArrow(player.x+Math.cos(angle)*dist,player.y+Math.sin(angle)*dist,false);}}
+ }
+}
 if(player.worldTreeUltTimer>0){player.worldTreeUltTimer=Math.max(0,player.worldTreeUltTimer-dt);player.worldTreeUltPulse=(player.worldTreeUltPulse||0)-dt;while(player.worldTreeUltPulse<=0&&player.worldTreeUltTimer>0){player.worldTreeUltPulse+=.5;let hitAny=false;for(const e of enemies){if(e.hp>0&&Math.hypot(e.x-player.x,e.y-player.y)<=player.worldTreeUltRadius){const d=player.atk*1.8;e.hp-=d;e.hit=.15;if(e.type!=='boss'&&e.type!=='megaBoss'){e.iceSlowTimer=Math.max(e.iceSlowTimer||0,1);e.iceSlow=Math.max(e.iceSlow||0,.35)}showDamageNumber(e.x,e.y-e.r,d,false);hitAny=true}}if(hitAny)player.hp=Math.min(player.maxHp,player.hp+player.maxHp*.01);rewardDefeatedEnemies();for(let i=0;i<12;i++){const a=Math.random()*Math.PI*2;particles.push({x:player.x+Math.cos(a)*player.worldTreeUltRadius*.7,y:player.y+Math.sin(a)*player.worldTreeUltRadius*.7,vx:Math.cos(a)*20,vy:Math.sin(a)*20,life:.35,color:'#86efac'})}}}
 if(elapsed>=specialEventClock || ((player.kills||0)-lastSpecialKill)>=100){triggerSpecialEvent();specialEventClock=elapsed+60;lastSpecialKill=player.kills||0}
 player.invuln=Math.max(0,player.invuln-dt);if(player.guardianPulse){player.guardianPulse.timer-=dt;player.guardianPulse.radius=(1-player.guardianPulse.timer/player.guardianPulse.max)*Math.max(W,H)*.42;if(player.guardianPulse.timer<=0)player.guardianPulse=null}if(player.ultBuffTimer>0){player.ultBuffTimer-=dt;if(player.ultBuffTimer<=0){player.rate/=player.ultBuffRate||1;player.spd/=player.ultBuffSpeed||1;player.ultBuffRate=1;player.ultBuffSpeed=1}}
