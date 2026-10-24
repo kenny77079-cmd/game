@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#111827">
-<title>阿斯嘉特之門：神弓守衛戰 V62-9｜暗黑龍息與光明聖輝整合版</title>
+<title>阿斯嘉特之門：神弓守衛戰 V63｜暗黑龍息與光明聖輝整合版</title>
 <!-- V46：修正 V41 操作區按鈕間意外輸出的字面 \n 字元；保留 V41 技能聯動及 V40 時間排版。 -->
 <style>
 :root{--bg:#101827;--panel:#182438;--gold:#ffd166;--mint:#74f2ce;--red:#ff6b6b;--text:#f5f7fb;--muted:#aebbd0}
@@ -240,7 +240,7 @@ body.battle-active #xpOuter{display:grid!important;grid-template-columns:28px mi
     <div id="leftHud" class="pill">
       <div class="hero-hud-top"><b id="heroName">奧米加</b><span id="levelText">Lv.1</span></div>
       <div class="bar"><div id="hpFill" class="fill"></div></div>
-      <div class="hero-hp-line"><span id="hpText">100 / 100 HP</span></div>
+      <div class="hero-hp-line"><span id="hpText">100 / 100 HP</span><span id="reviveCountText" style="margin-left:10px;color:#f9a8d4;font-weight:700">💖 死者甦醒 ×0</span></div>
     </div>
     <div id="centerHud" class="pill">
       <div class="kill-line"><span>☠️</span><b id="killText">擊倒 0</b></div>
@@ -269,7 +269,7 @@ body.battle-active #xpOuter{display:grid!important;grid-template-columns:28px mi
 <div id="toast"></div>
 <div class="overlay" id="startScreen">
  <div class="panel">
-  <div class="eyebrow">阿斯嘉特之門：神弓守衛戰 V62-9</div>
+  <div class="eyebrow">阿斯嘉特之門：神弓守衛戰 V63</div>
   <div style="display:flex;justify-content:center;margin:8px 0 4px"><button class="btn secondary" id="musicToggleMain" type="button" style="padding:8px 16px">♫ 背景音樂：開</button></div>
   <h1>阿斯嘉特之門：神弓守衛戰</h1>
   
@@ -278,6 +278,7 @@ body.battle-active #xpOuter{display:grid!important;grid-template-columns:28px mi
    <div class="stat"><b>🎴</b><span>角色抽卡</span></div><div class="stat"><b>⚔️</b><span>無盡刷怪</span></div><div class="stat"><b>✨</b><span>技能三選一</span></div>
   </div>
   <div class="row" style="margin:12px 0 8px;align-items:center;gap:10px"><label for="kidModeCheck" style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 14px;border:1px solid #5d7895;border-radius:12px;background:rgba(18,32,50,.8);color:#f3e5bb;font-weight:700"><input type="checkbox" id="kidModeCheck" style="width:20px;height:20px;accent-color:#e9bd65">🧸 KID 模式 <span style="font-size:12px;font-weight:400;color:#c9d6e7">怪物血量 ½｜怪物傷害 ½｜英雄血量 ×2（英雄攻擊不變）</span></label></div>
+  <div class="row" style="margin:4px 0 10px;align-items:center;gap:10px;flex-wrap:wrap"><label for="difficultySelect" style="color:#f3e5bb;font-weight:700">⚔️ 戰鬥難度</label><select id="difficultySelect" style="padding:10px;border-radius:10px;background:#17263c;color:#f9e7bd;border:1px solid #6d87a6;font-weight:700"><option value="normal">一般模式</option><option value="hard">困難模式｜怪物全能力 ×2</option><option value="inferno">煉獄模式｜怪物 ×2、英雄 ×60%</option></select><span style="font-size:12px;color:#c9d6e7">KID 模式與困難／煉獄模式互斥</span></div>
   <div class="row"><button class="btn" id="startBtn">開始戰鬥</button><button class="btn secondary" id="gachaBtn">🎴 角色召喚</button></div>
   <div class="hero-select-wrap"><div class="hero-select-head"><b>選擇出戰角色</b><span class="small" id="selectedHeroLabel">目前：奧米加</span></div><div class="hero-select-grid" id="startHeroChoices"></div></div>
   <p class="small">操作：手機拖曳左側搖桿移動；角色會自動攻擊最近的怪物。電腦可用 WASD／方向鍵移動。</p>
@@ -352,7 +353,7 @@ const HEROES=[ {id:'rookie',name:'奧米加',rarity:'N',icon:'🏹',desc:'天賦
 {id:'heart',name:'伊登的蘋果',icon:'💚',desc:'最大生命 +25，並恢復 25 點生命。',apply:p=>{p.maxHp+=25;p.hp=Math.min(p.maxHp,p.hp+25)}},
 {id:'armor',name:'硬化皮膚',icon:'🛡️',desc:'護甲 +1，減少受到的傷害。',apply:p=>p.armor++},
 {id:'magnet',name:'磁力核心',icon:'🧲',desc:'吸取經驗寶石的距離大幅增加。',apply:p=>p.magnet+=65},
-{id:'critical',name:'弱點射擊',icon:'✨',desc:'暴擊率 +8%，暴擊傷害倍率額外 +0.25；重複取得可持續疊加。',apply:p=>{p.crit=Math.min(.85,p.crit+.08);p.critDamage=(p.critDamage||2)+.25}},
+{id:'critical',name:'弱點射擊',icon:'✨',desc:'暴擊率每級 +8%，最高 50%；暴擊傷害倍率每級 +0.25，技能最高 Lv.10。',apply:p=>{p.crit=Math.min(.50,p.crit+.08);p.critDamage=(p.critDamage||2)+.25}},
 {id:'fire',name:'鳳凰之息',icon:'🔥',desc:'箭矢命中附加 1 層燃燒；每 0.5 秒每層造成 1 點傷害，可持續疊加。',apply:p=>p.fire+=5},
 {id:'ice',name:'斯卡蒂之箭',icon:'❄️',desc:'箭矢化為藍色冰錐。命中使敵人緩速 30%；同一敵人累計命中 5 支冰箭後冰凍 2 秒。每次升級緩速 +10%、冰凍 +0.2 秒，最高 70%／2.8 秒。',apply:p=>{p.iceLevel=Math.min(5,(p.iceLevel||0)+1)}},
 {id:'lightning',name:'雷神之箭',icon:'⚡',desc:'箭矢化為黃色閃電，命中後連鎖周圍敵人，初始最多 2 隻，每次升級額外連鎖 2 隻。連鎖半徑 81，連鎖傷害為原始攻擊的 50%。',apply:p=>{p.lightningLevel=(p.lightningLevel||0)+1}}, 
@@ -363,7 +364,7 @@ const HEROES=[ {id:'rookie',name:'奧米加',rarity:'N',icon:'🏹',desc:'天賦
  if(lv>=10){p.orbFireLevel=5;p.orbIceLevel=5;p.orbLightningLevel=5;}
 }},
 {id:'rapidShot',name:'連射箭',icon:'➶',desc:'每級在前一輪後 0.25 秒，完整重播一次多重箭扇形；連射箭也會套用烈焰、冰霜與雷霆效果。',apply:p=>p.rapidShot=(p.rapidShot||0)+1},
-{id:'revive',name:'死者甦醒',icon:'💖',desc:'每級增加 1 次死者甦醒；死亡時消耗 1 次並恢復最大生命值 50%。',apply:p=>p.reviveCharges=(p.reviveCharges||0)+1}
+{id:'revive',name:'死者甦醒',icon:'💖',desc:'每級增加 1 次死者甦醒，最多累積 10 次；死亡時消耗 1 次並恢復最大生命值 50%。',apply:p=>p.reviveCharges=Math.min(10,(p.reviveCharges||0)+1)}
 ];
 const SUPER_WEAPONS=[
  {id:'storm',name:'諸神黃昏·末日風暴',icon:'🌩️',needs:['ice','lightning'],recipe:'斯卡蒂之箭 Lv.5 + 雷神之箭 Lv.5',desc:'每 0.8 秒釋放冰雷脈衝，對周圍敵人造成 2.7 倍攻擊傷害並附加冰雷特效。',color:'#7dd3fc',radius:150,mult:2.7,interval:.8},
@@ -463,13 +464,19 @@ addEventListener('resize',resize);resize();
 function show(id){document.querySelectorAll('.overlay').forEach(x=>x.classList.add('hidden'));if(id)$(id).classList.remove('hidden');document.body.classList.toggle('battle-active',!!(running&&screen==='game'&&!id))}
 function toast(t){$('toast').textContent=t;$('toast').style.opacity=1;clearTimeout(toast.t);toast.t=setTimeout(()=>$('toast').style.opacity=0,1400)}
 function fmtTime(s){s=Math.floor(s);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+let difficultyMode='normal';
+function difficultyRead(){try{const v=localStorage.getItem('asgardDifficulty');return v==='hard'||v==='inferno'?v:'normal'}catch(_){return 'normal'}}
+function difficultyWrite(v){try{localStorage.setItem('asgardDifficulty',v)}catch(_){}}
+const difficultySelect=document.getElementById('difficultySelect');
+if(difficultySelect){difficultySelect.value=difficultyRead();difficultySelect.addEventListener('change',()=>{difficultyWrite(difficultySelect.value);if(difficultySelect.value!=='normal'&&kidModeCheckbox){kidModeCheckbox.checked=false;kidModeWrite(false)}})}
 let kidModeActive=false;
-function kidModeEnemy(e){if(kidModeActive&&e){e.hp=Math.max(.5,e.hp*.5);e.maxHp=Math.max(.5,e.maxHp*.5)}return e}
+function kidModeEnemy(e){if(difficultyMode!=='normal'&&e){e.hp*=2;e.maxHp*=2;e.dmg*=2;e.spd*=2;}if(kidModeActive&&e){e.hp=Math.max(.5,e.hp*.5);e.maxHp=Math.max(.5,e.maxHp*.5)}return e}
 function kidModeRead(){try{return localStorage.getItem('endlessBowKidMode')==='1'}catch(_){return false}}
 function kidModeWrite(on){try{localStorage.setItem('endlessBowKidMode',on?'1':'0')}catch(_){}}
 const kidModeCheckbox=document.getElementById('kidModeCheck');
-if(kidModeCheckbox){kidModeCheckbox.checked=kidModeRead();kidModeCheckbox.addEventListener('change',()=>kidModeWrite(kidModeCheckbox.checked));}
-function startRun(){kidModeActive=!!(kidModeCheckbox&&kidModeCheckbox.checked);selectedHero=HEROES.find(h=>h.id===save.selected)||HEROES[0];const h=selectedHero;save=normalizeSave(save);const hu=save.heroUpgrades[h.id]||{attack:0,magnet:0,rate:0,hp:0,armor:0,spd:0};const maxHp=Math.round(h.hp*(1+hu.hp*.10))*(kidModeActive?2:1);player={x:world.w/2,y:world.h/2,r:15,hp:maxHp,maxHp,atk:h.atk*(1+hu.attack*.10)*(h.id==='yggdrasilUR'?1.2:1)*(1),spd:h.spd+hu.spd*5,rate:h.rate*(1+hu.rate*.10),armor:(h.id==='guardian'?1:0)+hu.armor*2,crit:.05,critDamage:2,multi:0,pierce:0,magnet:85*(1+hu.magnet*.20),fire:0,iceLevel:0,lightningLevel:0,regen:0,orbs:0,orbLevel:0,orbFireLevel:0,orbIceLevel:0,orbLightningLevel:0,rapidShot:0,reviveCharges:0,talentClock:0,talentUltClock:0,rookieRevived:false,swiftTalentClock:0,swiftTalentActive:0,swiftTalentSpeed:1,burnPower:0,xp:0,nextXp:5,level:1,invuln:0,skills:[],superWeapons:[],bigKills:0,color:h.color};
+if(kidModeCheckbox){kidModeCheckbox.checked=kidModeRead();kidModeCheckbox.addEventListener('change',()=>{kidModeWrite(kidModeCheckbox.checked);if(kidModeCheckbox.checked&&difficultySelect){difficultySelect.value='normal';difficultyWrite('normal')}});}
+function startRun(){difficultyMode=difficultySelect?difficultySelect.value:'normal';kidModeActive=difficultyMode==='normal'&&!!(kidModeCheckbox&&kidModeCheckbox.checked);selectedHero=HEROES.find(h=>h.id===save.selected)||HEROES[0];const h=selectedHero;save=normalizeSave(save);const hu=save.heroUpgrades[h.id]||{attack:0,magnet:0,rate:0,hp:0,armor:0,spd:0};const maxHp=Math.round(h.hp*(1+hu.hp*.10))*(kidModeActive?2:1);player={x:world.w/2,y:world.h/2,r:15,hp:maxHp,maxHp,atk:h.atk*(1+hu.attack*.10)*(h.id==='yggdrasilUR'?1.2:1)*(1),spd:h.spd+hu.spd*5,rate:h.rate*(1+hu.rate*.10),armor:(h.id==='guardian'?1:0)+hu.armor*2,crit:.05,critDamage:2,multi:0,pierce:0,magnet:85*(1+hu.magnet*.20),fire:0,iceLevel:0,lightningLevel:0,regen:0,orbs:0,orbLevel:0,orbFireLevel:0,orbIceLevel:0,orbLightningLevel:0,rapidShot:0,reviveCharges:0,talentClock:0,talentUltClock:0,rookieRevived:false,swiftTalentClock:0,swiftTalentActive:0,swiftTalentSpeed:1,burnPower:0,xp:0,nextXp:5,level:1,invuln:0,skills:[],superWeapons:[],bigKills:0,color:h.color};
+if(difficultyMode==='inferno'){player.maxHp=Math.max(1,Math.round(player.maxHp*.6));player.hp=player.maxHp;player.atk*=.6;player.spd*=.6;player.rate*=.6;player.armor*=.6;}
 // 角色指定起始技能：透過既有技能 apply 函式套用，讓等級、HUD 與實際效果一致。
 if(h.id==='flame'){const sk=SKILLS.find(x=>x.id==='fire');if(sk){sk.apply(player);player.skills.push('fire')}}
 if(h.id==='moon'){const sk=SKILLS.find(x=>x.id==='orb');if(sk){sk.apply(player);player.skills.push('orb')}} if(h.id==='skadiN'){const sk=SKILLS.find(x=>x.id==='ice');if(sk){sk.apply(player);player.skills.push('ice')}}
@@ -484,17 +491,22 @@ function tryHeroRevive(){
  return false;
 }
 function tryAnyRevive(){
- if(player&&player.reviveCharges>0){player.reviveCharges--;player.hp=Math.max(1,Math.ceil(player.maxHp*.5));player.invuln=2.0;burst(player.x,player.y,'#f9a8d4',24);for(let i=0;i<20;i++){const a=i*Math.PI*2/20;particles.push({x:player.x,y:player.y,vx:Math.cos(a)*170,vy:Math.sin(a)*170,life:.7,color:i%2?'#f9a8d4':'#fff1f2'})}toast('💖 死者甦醒！恢復 50% 生命，剩餘 '+player.reviveCharges+' 次');return true;}
+ if(player&&player.reviveCharges>0){player.reviveCharges--;updateHud();player.hp=Math.max(1,Math.ceil(player.maxHp*.5));player.invuln=2.0;burst(player.x,player.y,'#f9a8d4',24);for(let i=0;i<20;i++){const a=i*Math.PI*2/20;particles.push({x:player.x,y:player.y,vx:Math.cos(a)*170,vy:Math.sin(a)*170,life:.7,color:i%2?'#f9a8d4':'#fff1f2'})}toast('💖 死者甦醒！恢復 50% 生命，剩餘 '+player.reviveCharges+' 次');return true;}
  return tryHeroRevive();
 }
 function endRun(victory=false){if(!running)return;if(victory){elapsed=1200;runCoins+=1000;}running=false;paused=false;screen='over';resetStick();bankRunCoins();save.totalKills=(save.totalKills||0)+(player.kills||0);save.best=Math.max(save.best||0,elapsed);saveGame();$('endTime').textContent=fmtTime(elapsed);$('endKills').textContent=player.kills||0;$('endCoins').textContent=runCoins;$('resultSummary').textContent=victory?`${selectedHero.name} 成功存活 20 分鐘，通關獎勵 +1,000 金幣！本局共獲得 ${runCoins} 金幣。`:`${selectedHero.name} 存活了 ${fmtTime(elapsed)}，獲得 ${runCoins} 金幣。`;show('gameOverScreen')}
-const SKILL_LEVEL_CAPS={multi:10,fire:10,ice:10,lightning:10,orb:10,rapidShot:1};
+const SKILL_LEVEL_CAPS={rapid:5,multi:10,pierce:10,magnet:10,critical:10,fire:10,ice:10,lightning:10,regen:10,orb:10,rapidShot:1,revive:10};
 function skillLevelCap(id){return SKILL_LEVEL_CAPS[id]||20}
+function availableNormalSkills(){return SKILLS.filter(sk=>skillLevel(sk.id)<skillLevelCap(sk.id))}
+function grantMaxSkillsLevelAttack(){player.atk+=100;updateHud();toast('所有一般技能已滿級！升級獎勵：攻擊力 +100');}
 function drawSkillChoices(isChest=false){
- const pool=SKILLS.filter(sk=>skillLevel(sk.id)<skillLevelCap(sk.id));
+ const pool=availableNormalSkills();
  $('skillChoices').innerHTML='';
  if(!pool.length){
   $('skillRefreshRow').classList.add('hidden');
+  if(!isChest){grantMaxSkillsLevelAttack();}else toast('所有一般技能已滿級，寶箱沒有可選技能');
+  chestSkillMode=false;paused=false;show(null);last=performance.now();raf=requestAnimationFrame(loop);
+  return;
   $('skillChoices').innerHTML='<div class="card" style="grid-column:1/-1;text-align:center;padding:18px"><h3>目前沒有可選技能</h3><p>可按右上角 × 關閉視窗並繼續戰鬥。</p></div>';
   toast('目前沒有可選技能，按 × 可繼續戰鬥');
   return;
@@ -529,13 +541,15 @@ function drawSkillChoices(isChest=false){
 function levelUp(){
  if(player.level>=251){player.level=251;player.xp=0;toast('角色等級已達上限 Lv.251');updateHud();return;}
  player.level++;player.xp-=player.nextXp;player.nextXp=Math.floor(player.nextXp*1.38+2);if(player.level>=251)player.xp=0;
+ if(!availableNormalSkills().length){grantMaxSkillsLevelAttack();return;}
  paused=true;chestSkillMode=false;skillRefreshCount=0;
  $('skillScreen').querySelector('.eyebrow').textContent='LEVEL UP';
  $('skillScreen').querySelector('h2').textContent='選擇一項強化';
- $('skillScreen').querySelector('p').textContent='技能可持續強化；指定技能上限 Lv.10、連射箭上限 Lv.1，其餘一般技能上限 Lv.20。配方技能 Lv.5 合成超武，前置技能最低等級決定超武等級，最高 Lv.6。刷新選項需 200 金幣。';
+ $('skillScreen').querySelector('p').textContent='技能可持續強化；技能上限依類別為 Lv.1／5／10／20。配方技能 Lv.5 合成超武，前置技能最低等級決定超武等級，最高 Lv.6。刷新選項需 200 金幣。';
  drawSkillChoices(false);show('skillScreen');
 }
 function openChestSkillChoice(){
+ if(!availableNormalSkills().length){toast('所有一般技能已滿級，寶箱沒有可選技能');return;}
  paused=true;chestSkillMode=true;skillRefreshCount=0;
  $('skillScreen').querySelector('.eyebrow').textContent='CHEST REWARD';
  $('skillScreen').querySelector('h2').textContent='寶箱技能三選一';
@@ -733,7 +747,7 @@ function rewardDefeatedEnemies(){
 
 $('ultBtn').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();castUltimate()});
 $('ultBtn').addEventListener('pointerup',function(e){if(e.pointerType==='touch'){e.preventDefault();e.stopPropagation();castUltimate()}},{passive:false});
-function updateHud(){if(!player)return;updateUltimateButton();$('levelText').textContent='Lv.'+player.level;$('hpFill').style.width=Math.max(0,player.hp/player.maxHp*100)+'%';$('hpText').textContent=Math.ceil(player.hp)+' / '+player.maxHp+' HP';$('xpFill').style.width=Math.min(100,player.xp/player.nextXp*100)+'%';$('timeText').textContent=fmtTime(elapsed);$('expMeta').textContent='經驗 ×'+experienceMultiplier().toFixed(2);$('timeMeta').textContent='事件 '+Math.max(0,Math.ceil(specialEventClock-elapsed))+'秒 · 通關 '+fmtTime(Math.max(0,1200-elapsed));$('xpPctText').textContent=Math.floor(Math.min(100,player.xp/player.nextXp*100))+'%';$('coinText').textContent=coins+runCoins;$('killText').textContent='擊倒 '+(player.kills||0);$('bigKillText').textContent='精英怪 '+(player.bigKills||0);$('attackText').textContent='攻擊 '+Math.round(player.atk);$('speedText').textContent='攻速 '+player.rate.toFixed(1);$('armorText').textContent='護甲 '+player.armor;$('moveSpeedText').textContent='移速 '+Math.round(player.spd);$('skillText').textContent=(player.skills.length?Array.from(new Set(player.skills)).map(id=>{const s=SKILLS.find(x=>x.id===id);return s?s.name+' Lv.'+skillLevel(id):''}).filter(Boolean):['尚未習得']).concat((player.superWeapons||[]).map(w=>'✨'+w.name+' Lv.'+(w.level||1))).join('、')}
+function updateHud(){if(!player)return;updateUltimateButton();$('levelText').textContent='Lv.'+player.level;$('hpFill').style.width=Math.max(0,player.hp/player.maxHp*100)+'%';$('hpText').textContent=Math.ceil(player.hp)+' / '+player.maxHp+' HP';$('reviveCountText').textContent='💖 死者甦醒 ×'+Math.max(0,player.reviveCharges||0);$('xpFill').style.width=Math.min(100,player.xp/player.nextXp*100)+'%';$('timeText').textContent=fmtTime(elapsed);$('expMeta').textContent='經驗 ×'+experienceMultiplier().toFixed(2);$('timeMeta').textContent='事件 '+Math.max(0,Math.ceil(specialEventClock-elapsed))+'秒 · 通關 '+fmtTime(Math.max(0,1200-elapsed));$('xpPctText').textContent=Math.floor(Math.min(100,player.xp/player.nextXp*100))+'%';$('coinText').textContent=coins+runCoins;$('killText').textContent='擊倒 '+(player.kills||0);$('bigKillText').textContent='精英怪 '+(player.bigKills||0);$('attackText').textContent='攻擊 '+Math.round(player.atk);$('speedText').textContent='攻速 '+player.rate.toFixed(1);$('armorText').textContent='護甲 '+player.armor;$('moveSpeedText').textContent='移速 '+Math.round(player.spd);$('skillText').textContent=(player.skills.length?Array.from(new Set(player.skills)).filter(id=>id!=='revive').map(id=>{const s=SKILLS.find(x=>x.id===id);return s?s.name+' Lv.'+skillLevel(id):''}).filter(Boolean):['尚未習得']).concat((player.superWeapons||[]).map(w=>'✨'+w.name+' Lv.'+(w.level||1))).join('、')}
 function spawnEnemy(){const a=Math.random()*Math.PI*2,dist=Math.max(W,H)*.65+100;let x=player.x+Math.cos(a)*dist,y=player.y+Math.sin(a)*dist;const t=Math.random();let type=t<.34?'slime':t<.52?'skeleton':t<.66?'brute':t<.77?'wisp':t<.88?'beetle':t<.96?'shaman':'shade';let scale=1+elapsed/85;
  const stats={slime:{r:11,hp:20,spd:48,dmg:10},skeleton:{r:13,hp:30,spd:57,dmg:10},brute:{r:19,hp:65,spd:35,dmg:17},wisp:{r:9,hp:17,spd:82,dmg:8},beetle:{r:15,hp:44,spd:43,dmg:14},shaman:{r:14,hp:36,spd:39,dmg:12},shade:{r:12,hp:28,spd:69,dmg:11}};
  const st=stats[type];let e={id:enemyId++,x,y,r:st.r,hp:st.hp*scale,maxHp:st.hp*scale,spd:st.spd+Math.min(35,elapsed/20),dmg:st.dmg,type,hit:0};enemies.push(kidModeEnemy(e))}
