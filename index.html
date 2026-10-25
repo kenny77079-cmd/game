@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#111827">
-<title>阿斯嘉特之門：神弓守衛戰 V69｜正式版</title>
+<title>阿斯嘉特之門：神弓守衛戰 V69-1｜正式版</title>
 <!-- V46：修正 V41 操作區按鈕間意外輸出的字面 \n 字元；保留 V41 技能聯動及 V40 時間排版。 -->
 <style>
 :root{--bg:#101827;--panel:#182438;--gold:#ffd166;--mint:#74f2ce;--red:#ff6b6b;--text:#f5f7fb;--muted:#aebbd0}
@@ -270,7 +270,7 @@ body.battle-active #xpOuter{display:grid!important;grid-template-columns:28px mi
 <div id="toast"></div>
 <div class="overlay" id="startScreen">
  <div class="panel">
-  <div class="eyebrow">阿斯嘉特之門：神弓守衛戰 V69</div>
+  <div class="eyebrow">阿斯嘉特之門：神弓守衛戰 V69-1</div>
   <div style="display:flex;justify-content:center;margin:8px 0 4px"><button class="btn secondary" id="musicToggleMain" type="button" style="padding:8px 16px">♫ 背景音樂：開</button></div>
   <h1>阿斯嘉特之門：神弓守衛戰</h1>
   
@@ -601,9 +601,7 @@ function openSkillArchive(){
  show('skillArchiveScreen');
 }
 // Private local-only developer toggle; no UI hints or announcements.
-const FENRIR_PRIVATE_KEY='asg_fenrir_private_v67';
-let fenrirPrivateEnabled=false;
-try{fenrirPrivateEnabled=localStorage.getItem(FENRIR_PRIVATE_KEY)==='1'}catch(_e){}
+const FENRIR_PRIVATE_KEY='asg_fenrir_private_v67'; let fenrirPrivateEnabled=false; /* Always start with the private summon control hidden, even if an earlier version saved it as enabled. */ try{localStorage.removeItem(FENRIR_PRIVATE_KEY)}catch(_e){}
 let fenrirPortraitTaps=0;
 function handleFenrirPortraitTap(ev){
  ev.preventDefault();ev.stopPropagation();
@@ -611,7 +609,7 @@ function handleFenrirPortraitTap(ev){
  if(fenrirPortraitTaps>=10){
   fenrirPortraitTaps=0;
   fenrirPrivateEnabled=!fenrirPrivateEnabled;
-  try{localStorage.setItem(FENRIR_PRIVATE_KEY,fenrirPrivateEnabled?'1':'0')}catch(_e){}
+  /* Developer switch applies only to this open game session. */
   const btn=$('fenrirTestBtn');
   if(btn)btn.style.display=(fenrirPrivateEnabled&&running&&screen==='game')?'block':'none';
  }
