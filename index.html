@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#111827">
-<title>阿斯嘉特之門：神弓守衛戰 V69-1｜正式版</title>
+<title>阿斯嘉特之門：神弓守衛戰 V69-2｜正式版</title>
 <!-- V46：修正 V41 操作區按鈕間意外輸出的字面 \n 字元；保留 V41 技能聯動及 V40 時間排版。 -->
 <style>
 :root{--bg:#101827;--panel:#182438;--gold:#ffd166;--mint:#74f2ce;--red:#ff6b6b;--text:#f5f7fb;--muted:#aebbd0}
@@ -270,7 +270,7 @@ body.battle-active #xpOuter{display:grid!important;grid-template-columns:28px mi
 <div id="toast"></div>
 <div class="overlay" id="startScreen">
  <div class="panel">
-  <div class="eyebrow">阿斯嘉特之門：神弓守衛戰 V69-1</div>
+  <div class="eyebrow">阿斯嘉特之門：神弓守衛戰 V69-2</div>
   <div style="display:flex;justify-content:center;margin:8px 0 4px"><button class="btn secondary" id="musicToggleMain" type="button" style="padding:8px 16px">♫ 背景音樂：開</button></div>
   <h1>阿斯嘉特之門：神弓守衛戰</h1>
   
@@ -390,7 +390,9 @@ function openFusionPromptAfterChoice(){return autoFuseReadyWeapons()}
 const SAVE_KEY='endlessBowSave';
 const SLOT_KEY='endlessBowSaveSlotsV1';
 let activeSlot=0;
-let save=loadSave(),selectedHero=HEROES.find(h=>h.id===save.selected)||HEROES[0],runCoins=0,coins=save.coins||0,runBanked=false;
+let save=loadSave(),selectedHero=HEROES.find(h=>h.id===save.selected)||HEROES[0],runCoins=0,runEarned=0,coins=save.coins||0,runBanked=false;
+ const RUN_COIN_LIMIT=3500;
+ function addRunReward(amount){const reward=Math.max(0,Math.min(amount,RUN_COIN_LIMIT-runEarned));runCoins+=reward;runEarned+=reward;return reward;}
 function defaultSave(){return {coins:500,unlocked:['rookie'],selected:'rookie',best:0,totalKills:0,heroUpgrades:{}}}
 function normalizeSave(raw){
  const d=defaultSave(),v=Object.assign(d,raw||{});
@@ -463,7 +465,7 @@ if(startingSkillId){
  const sk=SKILLS.find(x=>x.id===startingSkillId);
  if(sk){sk.apply(player);player.skills.push(startingSkillId);}
 }
-skadiFrostRainVfx.length=0;phoenixFireFields=[];enemies=[];bullets=[];gems=[];particles=[];damageTexts=[];chests=[];hostileShots=[];rapidShotQueue=[];elapsed=0;spawnClock=0;attackClock=.2;runCoins=0;runBanked=false;player.ultCharge=0;player.ultReady=false;specialEventClock=60;lastSpecialKill=0;specialEventIndex=0;finalBossSpawned=false;enemyId=0;smallKillCount=0;megaEliteCount=0;running=true;paused=false;screen='game';$('fenrirTestBtn').style.display=fenrirPrivateEnabled?'block':'none';BowAudio.setFenrirBattle(false);show(null);$('heroName').textContent=h.name;$('pauseBtn').textContent='Ⅱ 暫停';last=performance.now();cancelAnimationFrame(raf);raf=requestAnimationFrame(loop)}
+skadiFrostRainVfx.length=0;phoenixFireFields=[];enemies=[];bullets=[];gems=[];particles=[];damageTexts=[];chests=[];hostileShots=[];rapidShotQueue=[];elapsed=0;spawnClock=0;attackClock=.2;runCoins=0;runEarned=0;runBanked=false;player.ultCharge=0;player.ultReady=false;specialEventClock=60;lastSpecialKill=0;specialEventIndex=0;finalBossSpawned=false;enemyId=0;smallKillCount=0;megaEliteCount=0;running=true;paused=false;screen='game';$('fenrirTestBtn').style.display=fenrirPrivateEnabled?'block':'none';BowAudio.setFenrirBattle(false);show(null);$('heroName').textContent=h.name;$('pauseBtn').textContent='Ⅱ 暫停';last=performance.now();cancelAnimationFrame(raf);raf=requestAnimationFrame(loop)}
 function tryHeroRevive(){
  if(selectedHero.id==='rookie'&&!player.rookieRevived){
   player.rookieRevived=true;player.hp=player.maxHp;player.invuln=2.2;
@@ -477,7 +479,7 @@ function tryAnyRevive(){
  if(player&&player.reviveCharges>0){player.reviveCharges--;updateHud();player.hp=Math.max(1,Math.ceil(player.maxHp*.5));player.invuln=2.0;burst(player.x,player.y,'#f9a8d4',24);for(let i=0;i<20;i++){const a=i*Math.PI*2/20;particles.push({x:player.x,y:player.y,vx:Math.cos(a)*170,vy:Math.sin(a)*170,life:.7,color:i%2?'#f9a8d4':'#fff1f2'})}toast('💖 死者甦醒！恢復 50% 生命，剩餘 '+player.reviveCharges+' 次');return true;}
  return tryHeroRevive();
 }
-function endRun(victory=false){if(!running)return;if(victory){runCoins+=1000;}running=false;paused=false;screen='over';$('fenrirTestBtn').style.display='none';resetStick();bankRunCoins();save.totalKills=(save.totalKills||0)+(player.kills||0);save.best=Math.max(save.best||0,elapsed);saveGame();$('endTime').textContent=fmtTime(elapsed);$('endKills').textContent=player.kills||0;$('endCoins').textContent=runCoins;$('resultSummary').textContent=victory?`${selectedHero.name} ${finalBossSpawned&&elapsed<1200?'擊敗最終 Boss 芬里爾，提前通關！':'成功存活 20 分鐘！'}通關獎勵 +1,000 金幣！本局共獲得 ${runCoins} 金幣。`:`${selectedHero.name} 存活了 ${fmtTime(elapsed)}，獲得 ${runCoins} 金幣。`;show('gameOverScreen')}
+function endRun(victory=false){if(!running)return;if(victory){addRunReward(1000);}running=false;paused=false;screen='over';$('fenrirTestBtn').style.display='none';resetStick();bankRunCoins();save.totalKills=(save.totalKills||0)+(player.kills||0);save.best=Math.max(save.best||0,elapsed);saveGame();$('endTime').textContent=fmtTime(elapsed);$('endKills').textContent=player.kills||0;$('endCoins').textContent=runCoins;$('resultSummary').textContent=victory?`${selectedHero.name} ${finalBossSpawned&&elapsed<1200?'擊敗最終 Boss 芬里爾，提前通關！':'成功存活 20 分鐘！'}通關獎勵已計入本局上限 3,500 金幣！本局結餘 ${runCoins} 金幣。`:`${selectedHero.name} 存活了 ${fmtTime(elapsed)}，獲得 ${runCoins} 金幣。`;show('gameOverScreen')}
 const SKILL_LEVEL_CAPS={power:10,rapid:5,multi:10,pierce:10,magnet:10,critical:10,fire:5,ice:5,lightning:5,regen:10,orb:5,rapidShot:1,revive:10};
 function skillLevelCap(id){return SKILL_LEVEL_CAPS[id]||20}
 const B3_ELEMENT_IDS=['lightning','fire','ice'];
@@ -797,7 +799,7 @@ function awardEnemyDeath(e){
  player.kills=(player.kills||0)+1;
  countSmallKill(e);countEliteKill(e);
  player.ultCharge=Math.min(100,(player.ultCharge||0)+5);
- runCoins+=(e.type==='boss'||e.type==='megaBoss')?10:e.type==='mega'?5:e.type==='brute'?2:0.5;
+ addRunReward((e.type==='boss'||e.type==='megaBoss'||e.type==='finalBoss')?2.5:e.type==='mega'?2:e.type==='brute'?1:0.2);
  const xp=(e.type==='boss'||e.type==='megaBoss')?30:e.type==='brute'?6:e.type==='horde'?2:1;
  addGem(e.x,e.y,xp);
  burst(e.x,e.y,(e.type==='boss'||e.type==='megaBoss')?'#f0abfc':e.type==='mega'?'#f472b6':'#ffd166',(e.type==='boss'||e.type==='megaBoss'||e.type==='mega')?20:8);
@@ -889,11 +891,11 @@ function addGem(x,y,val=1){const pt=nearestReachableGemPoint(x,y);gems.push({x:p
 function spawnBossChest(x,y){const pt=nearestReachableGemPoint(x,y);chests.push({x:pt.x,y:pt.y,r:15,life:30});burst(pt.x,pt.y,'#f0abfc',18);toast('🎁 BOSS 專屬寶箱掉落！')}
 function spawnBonusChest(x,y){const pt=nearestReachableGemPoint(x,y);chests.push({x:pt.x,y:pt.y,r:15,life:30,bonus:true});burst(pt.x,pt.y,'#fbbf24',22);toast('🎁 精英怪累計擊殺 10 隻！額外寶箱掉落！')}
 function openBossChest(chest){
- const gold=20;runCoins+=gold;
+ const gold=10;addRunReward(gold);
  const xp=35;player.xp+=Math.round(xp*experienceMultiplier());player.ultCharge=Math.min(100,(player.ultCharge||0)+25);
   // V65: 寶箱不再提供隨機能力加成。
  burst(chest.x,chest.y,'#ffd166',24);
- toast((chest.bonus?'精英獎勵寶箱':'BOSS 寶箱')+'（免費）！+20 金幣、+'+Math.round(xp*experienceMultiplier())+' 經驗與技能三選一');
+ toast((chest.bonus?'精英獎勵寶箱':'BOSS 寶箱')+'（免費）！+10 金幣、+'+Math.round(xp*experienceMultiplier())+' 經驗與技能三選一');
  openChestSkillChoice();
  return true;
 }
