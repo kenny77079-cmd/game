@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#111827">
-<title>阿斯嘉特之門：神弓守衛戰 V69-2｜正式版</title>
+<title>阿斯嘉特之門：神弓守衛戰 V69-3｜測試版</title>
 <!-- V46：修正 V41 操作區按鈕間意外輸出的字面 \n 字元；保留 V41 技能聯動及 V40 時間排版。 -->
 <style>
 :root{--bg:#101827;--panel:#182438;--gold:#ffd166;--mint:#74f2ce;--red:#ff6b6b;--text:#f5f7fb;--muted:#aebbd0}
@@ -270,7 +270,7 @@ body.battle-active #xpOuter{display:grid!important;grid-template-columns:28px mi
 <div id="toast"></div>
 <div class="overlay" id="startScreen">
  <div class="panel">
-  <div class="eyebrow">阿斯嘉特之門：神弓守衛戰 V69-2</div>
+  <div class="eyebrow">阿斯嘉特之門：神弓守衛戰 V69-3</div>
   <div style="display:flex;justify-content:center;margin:8px 0 4px"><button class="btn secondary" id="musicToggleMain" type="button" style="padding:8px 16px">♫ 背景音樂：開</button></div>
   <h1>阿斯嘉特之門：神弓守衛戰</h1>
   
@@ -478,7 +478,7 @@ function tryAnyRevive(){
  if(player&&player.reviveCharges>0){player.reviveCharges--;updateHud();player.hp=Math.max(1,Math.ceil(player.maxHp*.5));player.invuln=2.0;burst(player.x,player.y,'#f9a8d4',24);for(let i=0;i<20;i++){const a=i*Math.PI*2/20;particles.push({x:player.x,y:player.y,vx:Math.cos(a)*170,vy:Math.sin(a)*170,life:.7,color:i%2?'#f9a8d4':'#fff1f2'})}toast('💖 死者甦醒！恢復 50% 生命，剩餘 '+player.reviveCharges+' 次');return true;}
  return tryHeroRevive();
 }
-function endRun(victory=false){if(!running)return;if(victory){addRunReward(1000);}running=false;paused=false;screen='over';$('fenrirTestBtn').style.display='none';resetStick();bankRunCoins();save.totalKills=(save.totalKills||0)+(player.kills||0);save.best=Math.max(save.best||0,elapsed);saveGame();$('endTime').textContent=fmtTime(elapsed);$('endKills').textContent=player.kills||0;$('endCoins').textContent=Math.ceil(coinTenth(runCoins));$('resultSummary').textContent=victory?`${selectedHero.name} ${finalBossSpawned&&elapsed<1200?'擊敗最終 Boss 芬里爾，提前通關！':'成功存活 20 分鐘！'}通關獎勵已計入本局上限 3,500 金幣！本局結餘 ${Math.ceil(coinTenth(runCoins))} 金幣。`:`${selectedHero.name} 存活了 ${fmtTime(elapsed)}，獲得 ${Math.ceil(coinTenth(runCoins))} 金幣。`;show('gameOverScreen')}
+function endRun(victory=false){if(!running)return;if(victory){addRunReward(1000);}running=false;paused=false;screen='over';$('fenrirTestBtn').style.display='none';resetStick();bankRunCoins();save.totalKills=(save.totalKills||0)+(player.kills||0);save.best=Math.max(save.best||0,elapsed);saveGame();$('endTime').textContent=fmtTime(elapsed);$('endKills').textContent=player.kills||0;$('endCoins').textContent=Math.ceil(coinTenth(runCoins));$('resultSummary').textContent=victory?`${selectedHero.name} ${finalBossSpawned?'擊敗最終 Boss 芬里爾，通關！':'成功完成挑戰！'}通關獎勵已計入本局上限 3,500 金幣！本局結餘 ${Math.ceil(coinTenth(runCoins))} 金幣。`:`${selectedHero.name} 存活了 ${fmtTime(elapsed)}，獲得 ${Math.ceil(coinTenth(runCoins))} 金幣。`;show('gameOverScreen')}
 const SKILL_LEVEL_CAPS={power:10,rapid:5,multi:5,pierce:5,heart:10,armor:10,critical:5,fire:5,ice:5,lightning:5,regen:10,orb:5,rapidShot:1,revive:10};
 function skillLevelCap(id){return SKILL_LEVEL_CAPS[id]||20}
 const B3_ELEMENT_IDS=['lightning','fire','ice'];
@@ -822,7 +822,7 @@ function rewardDefeatedEnemies(){
 
 $('ultBtn').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();castUltimate()});
 $('ultBtn').addEventListener('pointerup',function(e){if(e.pointerType==='touch'){e.preventDefault();e.stopPropagation();castUltimate()}},{passive:false});
-function updateHud(){if(!player)return;clearChestsIfAllNormalSkillsAcquired();updateUltimateButton();$('levelText').textContent='Lv.'+player.level;$('hpFill').style.width=Math.max(0,player.hp/player.maxHp*100)+'%';$('hpText').textContent=Math.ceil(player.hp)+' / '+player.maxHp+' HP';$('reviveCountText').textContent='💖 死者甦醒 ×'+Math.max(0,player.reviveCharges||0);$('xpFill').style.width=Math.min(100,player.xp/player.nextXp*100)+'%';$('timeText').textContent=fmtTime(elapsed);$('expMeta').textContent='經驗 ×'+experienceMultiplier().toFixed(2);$('timeMeta').textContent='事件 '+Math.max(0,Math.ceil(specialEventClock-elapsed))+'秒 · 通關 '+fmtTime(Math.max(0,1200-elapsed));$('xpPctText').textContent=Math.floor(Math.min(100,player.xp/player.nextXp*100))+'%';$('coinText').textContent=coinTenth(coins+runCoins).toFixed(1);$('killText').textContent='擊倒 '+(player.kills||0);$('bigKillText').textContent='精英怪 '+(player.bigKills||0);$('attackText').textContent='攻擊 '+Math.round(player.atk);$('speedText').textContent='攻速 '+player.rate.toFixed(1);$('armorText').textContent='護甲 '+player.armor;$('moveSpeedText').textContent='移速 '+Math.round(player.spd);$('skillText').textContent=(player.skills.length?Array.from(new Set(player.skills)).filter(id=>id!=='revive').map(id=>{const s=SKILLS.find(x=>x.id===id);return s?s.name+' Lv.'+skillLevel(id):''}).filter(Boolean):['尚未習得']).concat((player.superWeapons||[]).map(w=>'✨'+w.name+' Lv.'+(w.level||1))).join('、')}
+function updateHud(){if(!player)return;clearChestsIfAllNormalSkillsAcquired();updateUltimateButton();$('levelText').textContent='Lv.'+player.level;$('hpFill').style.width=Math.max(0,player.hp/player.maxHp*100)+'%';$('hpText').textContent=Math.ceil(player.hp)+' / '+player.maxHp+' HP';$('reviveCountText').textContent='💖 死者甦醒 ×'+Math.max(0,player.reviveCharges||0);$('xpFill').style.width=Math.min(100,player.xp/player.nextXp*100)+'%';$('timeText').textContent=fmtTime(elapsed);$('expMeta').textContent='經驗 ×'+experienceMultiplier().toFixed(2);$('timeMeta').textContent='事件 '+Math.max(0,Math.ceil(specialEventClock-elapsed))+'秒 · 通關 '+fmtTime(Math.max(0,900-elapsed));$('xpPctText').textContent=Math.floor(Math.min(100,player.xp/player.nextXp*100))+'%';$('coinText').textContent=coinTenth(coins+runCoins).toFixed(1);$('killText').textContent='擊倒 '+(player.kills||0);$('bigKillText').textContent='精英怪 '+(player.bigKills||0);$('attackText').textContent='攻擊 '+Math.round(player.atk);$('speedText').textContent='攻速 '+player.rate.toFixed(1);$('armorText').textContent='護甲 '+player.armor;$('moveSpeedText').textContent='移速 '+Math.round(player.spd);$('skillText').textContent=(player.skills.length?Array.from(new Set(player.skills)).filter(id=>id!=='revive').map(id=>{const s=SKILLS.find(x=>x.id===id);return s?s.name+' Lv.'+skillLevel(id):''}).filter(Boolean):['尚未習得']).concat((player.superWeapons||[]).map(w=>'✨'+w.name+' Lv.'+(w.level||1))).join('、')}
 // C collision-only radius table. D2 render size and e.r remain untouched.
 const C_MONSTER_BODY_RADIUS=Object.freeze({
  slime:17,skeleton:15,brute:23,wisp:14,beetle:18,shaman:17,shade:15,
@@ -864,7 +864,8 @@ for(let volley=1;volley<=rapid;volley++){
 }
 rapidShotQueue.sort((a,b)=>a.at-b.at);
 }
-function experienceMultiplier(){return Math.pow(1.5,Math.floor(elapsed/180));}
+// V69-3: 15-minute strategy survival: bounded, non-exponential XP pacing.
+function experienceMultiplier(){return elapsed<180?1:elapsed<360?1.30:elapsed<540?1.65:elapsed<660?2.00:elapsed<780?2.30:1.00;}
 const walkZoneRaw=[
  [330,320],[375,312],[425,315],[475,327],[525,347],[570,375],[615,410],[655,450],[690,490],[710,520],[715,545],[700,565],[680,585],
  [675,630],[678,690],[678,760],[680,835],[680,910],[680,985],[678,1060],[678,1135],[675,1195],
@@ -894,15 +895,15 @@ function nearestReachableGemPoint(x,y){
  return {x:px,y:py};
 }
 function addGem(x,y,val=1){const pt=nearestReachableGemPoint(x,y);gems.push({x:pt.x,y:pt.y,r:6,val})}
-// V69-2: Stop chest drops once every obtainable normal skill has been acquired at least once.
+// V69-3: Stop chest drops only when every obtainable normal skill reaches its hero-specific level cap.
 // Elemental skills from unselected routes are not obtainable in the current run.
 function allNormalSkillsAcquired(){
  // Compatibility name retained: completion now means every obtainable normal skill is at its hero-specific cap.
  if(!player||!Array.isArray(player.skills)||!player.elementRoute)return false;
  return availableNormalSkills().length===0;
 }
-function spawnBossChest(x,y){if(allNormalSkillsAcquired())return;const pt=nearestReachableGemPoint(x,y);chests.push({x:pt.x,y:pt.y,r:15,life:30});burst(pt.x,pt.y,'#f0abfc',18);toast('🎁 BOSS 專屬寶箱掉落！')}
-function spawnBonusChest(x,y){if(allNormalSkillsAcquired())return;const pt=nearestReachableGemPoint(x,y);chests.push({x:pt.x,y:pt.y,r:15,life:30,bonus:true});burst(pt.x,pt.y,'#fbbf24',22);toast('🎁 精英怪累計擊殺 10 隻！額外寶箱掉落！')}
+function spawnBossChest(x,y){if(allNormalSkillsAcquired()||chests.length>=3)return;const pt=nearestReachableGemPoint(x,y);chests.push({x:pt.x,y:pt.y,r:15,life:30});burst(pt.x,pt.y,'#f0abfc',18);toast('🎁 BOSS 專屬寶箱掉落！')}
+function spawnBonusChest(x,y){if(allNormalSkillsAcquired()||chests.length>=3)return;const pt=nearestReachableGemPoint(x,y);chests.push({x:pt.x,y:pt.y,r:15,life:30,bonus:true});burst(pt.x,pt.y,'#fbbf24',22);toast('🎁 精英怪累計擊殺 10 隻！額外寶箱掉落！')}
 function openBossChest(chest){
  if(allNormalSkillsAcquired())return false;
  const gold=10;addRunReward(gold);
@@ -948,11 +949,11 @@ function drawPhoenixFireFields(){
  }
 }
 let specialEventClock=60,lastSpecialKill=0,specialEventIndex=0,finalBossSpawned=false;
-const MONSTER_MAX_ON_FIELD=150; // Legacy constant retained for older references; C V69-2 uses dynamic caps.
-function cMonsterCap(t=elapsed){return t<300?Math.min(50,35+Math.floor(t/20)):t<600?Math.min(75,50+Math.floor((t-300)/12)):t<780?65:t<960?55:t<1080?45:1;}
-function cMonsterBalance(t=elapsed){return t<300?{elite:.02,hp:1,atk:1}:t<600?{elite:.05,hp:1.15,atk:1.15}:t<780?{elite:.10,hp:1.4,atk:1.3}:t<960?{elite:.15,hp:1.8,atk:1.55}:{elite:.20,hp:2.2,atk:1.8};}
+const MONSTER_MAX_ON_FIELD=150; // Legacy constant retained for older references; C V69-3 uses dynamic caps.
+function cMonsterCap(t=elapsed){return t<180?35:t<360?45:t<540?55:t<660?50:t<780?40:1;}
+function cMonsterBalance(t=elapsed){return t<180?{elite:.02,hp:1,atk:1}:t<360?{elite:.05,hp:1.15,atk:1.10}:t<540?{elite:.10,hp:1.35,atk:1.25}:t<660?{elite:.15,hp:1.60,atk:1.45}:{elite:.20,hp:1.90,atk:1.65};}
 function cApplyMonsterBalance(e){if(!e||e.type==='finalBoss')return e;const b=cMonsterBalance();e.hp*=b.hp;e.maxHp*=b.hp;e.dmg*=b.atk;return e;}
-function cCanSpawnMonster(){return !finalBossSpawned&&elapsed<1080&&enemies.length<cMonsterCap();}
+function cCanSpawnMonster(){return !finalBossSpawned&&elapsed<780&&enemies.length<cMonsterCap();}
 let cHordePending=0,cHordeClock=0;
 function cEnforceMonsterCap(){if(finalBossSpawned)return;const cap=cMonsterCap();if(enemies.length<=cap)return;
  // Despawn farthest non-boss enemies first; no death reward because these were not defeated.
@@ -977,7 +978,7 @@ function cUpdateHorde(dt){if(!cHordePending||finalBossSpawned)return;cHordeClock
  // Queue is bounded so an overfull wave cannot build up unbounded deferred work.
 }
 
-function bossBaseHPAt(t){return t>=900?24000:t>=600?12000:null;}
+function bossBaseHPAt(t){return t>=660?24000:t>=420?12000:null;}
 function spawnFinalBoss(){
  if(finalBossSpawned)return;
  finalBossSpawned=true;cHordePending=0;cHordeClock=0;
@@ -986,7 +987,7 @@ function spawnFinalBoss(){
  const a=Math.random()*Math.PI*2,dist=Math.max(W,H)*.75;
  const x=Math.max(35,Math.min(world.w-35,player.x+Math.cos(a)*dist));
  const y=Math.max(35,Math.min(world.h-35,player.y+Math.sin(a)*dist));
- enemies.push(kidModeEnemy({id:enemyId++,x,y,r:46,hp:1000000,maxHp:1000000,spd:68,dmg:500,type:'finalBoss',name:'滅世魔狼·芬里爾',hit:0,attackClock:0,fenrirPhase:1,fenrirClock:0,fenrirDashCD:6,fenrirRoarCD:10,fenrirMeteorCD:12,fenrirDash:null,fenrirRoar:null,fenrirMeteors:[],fenrirEnraged:false}));
+ enemies.push(kidModeEnemy({id:enemyId++,x,y,r:46,hp:750000,maxHp:750000,spd:68,dmg:500,type:'finalBoss',name:'滅世魔狼·芬里爾',hit:0,attackClock:0,fenrirPhase:1,fenrirClock:0,fenrirDashCD:6,fenrirRoarCD:10,fenrirMeteorCD:12,fenrirDash:null,fenrirRoar:null,fenrirMeteors:[],fenrirEnraged:false}));
  showFenrirEntrance();toast('⚠️ 諸神黃昏！滅世魔狼·芬里爾降臨！');
 }
 // C monster module: Fenrir encounter logic. Visual presentation is delegated to D.
@@ -1103,7 +1104,7 @@ function drawSkadiFrostRainVfx(){
   if(progress>.70){ctx.save();ctx.globalAlpha=(progress-.70)/.30*.65;ctx.strokeStyle='#9fefff';ctx.lineWidth=1.5;ctx.shadowColor='#6fdcff';ctx.shadowBlur=12;ctx.beginPath();ctx.ellipse(f.x,f.y,7+progress*7,3+progress*4,0,0,Math.PI*2);ctx.stroke();ctx.restore();}
  }
 }
-function update(dt){updatePhoenixFireFields(dt);for(let i=skadiFrostRainVfx.length-1;i>=0;i--){skadiFrostRainVfx[i].life-=dt;if(skadiFrostRainVfx[i].life<=0)skadiFrostRainVfx.splice(i,1);}if(elapsed+dt>=1200){elapsed=1200;updateHud();endRun(true);return;}elapsed+=dt;if(elapsed>=1080&&!finalBossSpawned)spawnFinalBoss();while(rapidShotQueue.length&&rapidShotQueue[0].at<=elapsed){const shot=rapidShotQueue.shift();shot.fire()}spawnClock+=dt;attackClock-=dt;if(player.dragonUltTimer>0)player.dragonUltTimer=Math.max(0,player.dragonUltTimer-dt);
+function update(dt,clockDt=dt){updatePhoenixFireFields(dt);for(let i=skadiFrostRainVfx.length-1;i>=0;i--){skadiFrostRainVfx[i].life-=dt;if(skadiFrostRainVfx[i].life<=0)skadiFrostRainVfx.splice(i,1);}if(elapsed+clockDt>=900){elapsed=900;updateHud();endRun(false);return;}elapsed+=clockDt;if(elapsed>=780&&!finalBossSpawned)spawnFinalBoss();while(rapidShotQueue.length&&rapidShotQueue[0].at<=elapsed){const shot=rapidShotQueue.shift();shot.fire()}spawnClock+=dt;attackClock-=dt;if(player.dragonUltTimer>0)player.dragonUltTimer=Math.max(0,player.dragonUltTimer-dt);
  if(player.dragonUltShake>0)player.dragonUltShake=Math.max(0,player.dragonUltShake-dt);
  if(player.dragonUltBurst>0)player.dragonUltBurst=Math.max(0,player.dragonUltBurst-dt);
 if(player.skadiUltTimer>0){
@@ -2477,7 +2478,7 @@ for(const p of particles){ctx.globalAlpha=Math.max(0,p.life*2);ctx.fillStyle=p.c
  else{ctx.save();ctx.shadowColor=p.color;ctx.shadowBlur=8;ctx.beginPath();ctx.arc(p.x,p.y,3.5,0,Math.PI*2);ctx.fill();ctx.restore()}
 }ctx.globalAlpha=1;ctx.restore();
 }
-function loop(now){if(!running||paused)return;const dt=Math.min(.04,(now-last)/1000||0);last=now;update(dt);if(!running)return;draw();raf=requestAnimationFrame(loop)}
+function loop(now){if(!running||paused)return;const wallDt=Math.max(0,Math.min(.25,(now-last)/1000||0));const dt=Math.min(.04,wallDt);last=now;update(dt,wallDt);if(!running)return;draw();raf=requestAnimationFrame(loop)}
 const stick={active:false,x:0,y:0,pointerId:null,touchId:null};const base=$('stickBase'),knob=$('stickKnob');
 function stickMoveXY(clientX,clientY){const r=base.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let dx=clientX-cx,dy=clientY-cy,len=Math.hypot(dx,dy),max=Math.max(22,Math.min(r.width,r.height)*.34);if(len>max){dx=dx/len*max;dy=dy/len*max}stick.x=dx/max;stick.y=dy/max;knob.style.transform=`translate(${dx}px,${dy}px)`;}
 function stickMove(e){stickMoveXY(e.clientX,e.clientY)}
