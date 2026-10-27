@@ -617,7 +617,7 @@ function drawSkillChoices(isChest=false){
   const current=skillLevel(sk.id);
   const b=document.createElement('button');b.className='card';b.type='button';
   const recipes=SUPER_WEAPONS.filter(w=>w.needs.includes(sk.id)&&(!w.heroOnly||selectedHero.id===w.heroOnly)).map(w=>'合成目標：'+w.recipe+' → '+w.name);
-  b.innerHTML=`<div class="icon">${sk.icon}</div><h3>${sk.name} <span style="font-size:11px;color:#93c5fd">Lv.${current} → Lv.${current+1}/${normalSkillCapForHero(sk.id)}</span></h3><p>${firstRoute?B3_ELEMENT_INFO[sk.id]+'<br>':''}${sk.desc}</p>${recipes.length?'<p style="margin-top:8px;color:#fcd34d;font-size:11px">'+recipes.join('<br>')+'</p>':''}`;
+  b.innerHTML=`<div class="icon">${window.asgardSkillArt ? window.asgardSkillArt(sk.id) : sk.icon}</div><h3>${sk.name} <span style="font-size:11px;color:#93c5fd">Lv.${current} → Lv.${current+1}/${normalSkillCapForHero(sk.id)}</span></h3><p>${firstRoute?B3_ELEMENT_INFO[sk.id]+'<br>':''}${sk.desc}</p>${recipes.length?'<p style="margin-top:8px;color:#fcd34d;font-size:11px">'+recipes.join('<br>')+'</p>':''}`;
   b.onclick=()=>{
    if(skillLevel(sk.id)>=normalSkillCapForHero(sk.id)){
     toast(sk.name+' 已達等級上限 Lv.'+normalSkillCapForHero(sk.id));
@@ -700,7 +700,7 @@ function openSkillArchive(){
  $('skillArchiveCount').textContent=SKILLS.length;
  SKILLS.forEach((s,i)=>{
   const card=document.createElement('div');card.className='skill-archive-card';
-  card.innerHTML=`<div class="skill-archive-icon">${s.icon}</div><div><span class="skill-tag">戰鬥升級技能 ${String(i+1).padStart(2,'0')}</span><h3>${s.name}</h3><p>${s.desc}</p><p style="margin-top:6px;color:#86efac">取得後立即生效；再次取得可依技能效果繼續強化</p></div>`;
+  card.innerHTML=`<div class="skill-archive-icon">${window.asgardSkillArt ? window.asgardSkillArt(s.id) : s.icon}</div><div><span class="skill-tag">戰鬥升級技能 ${String(i+1).padStart(2,'0')}</span><h3>${s.name}</h3><p>${s.desc}</p><p style="margin-top:6px;color:#86efac">取得後立即生效；再次取得可依技能效果繼續強化</p></div>`;
   grid.appendChild(card);
  });
  show('skillArchiveScreen');
@@ -3117,31 +3117,32 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <script id="v70-4-skill-artwork">
 (function(){
 'use strict';
+// V70-11: 直接綁定技能圖鑑與三選一技能圖示；不修改任何技能數值或行為。
 const motifs={
-power:'<path d="M28 8L20 29 28 25 21 51 45 22 34 27 41 8Z"/><path d="M12 44l8-8m23 7 8-8"/>',
-rapid:'<path d="M7 19h22M4 31h26M10 43h18"/><path d="M38 8L28 32h12l-9 24 25-31H43l7-17Z"/>',
-multi:'<path d="M10 49L42 15m-6 0h6v7M15 49L46 22m-5 0h6v7M8 37L35 10m-5 0h6v7"/>',
-pierce:'<path d="M8 48L47 9M30 9h17v17"/><circle cx="22" cy="34" r="12"/><circle cx="22" cy="34" r="5"/>',
-heart:'<path d="M32 54S7 37 7 22C7 9 24 7 32 20 40 7 57 9 57 22 57 37 32 54 32 54Z"/><path d="M32 25v17m-8-8h16"/>',
-armor:'<path d="M32 5L53 13v18c0 15-11 23-21 28C22 54 11 46 11 31V13Z"/><path d="M22 30l7 7 14-15"/>',
-critical:'<circle cx="32" cy="32" r="22"/><circle cx="32" cy="32" r="12"/><circle cx="32" cy="32" r="3"/><path d="M46 18L59 5m-9 0h9v9"/>',
-fire:'<path d="M32 5C42 18 24 21 38 33 43 27 44 20 44 20 58 35 49 56 32 57 12 57 10 38 24 24c0 11 5 12 8 14C33 27 22 20 32 5Z"/><path d="M32 52c-9-4-6-13 1-21 0 8 8 10 6 16-1 4-4 5-7 5Z"/>',
-ice:'<path d="M32 4v56M8 18l48 28M8 46l48-28M24 12l8 8 8-8M24 52l8-8 8 8M8 27l12-1-4-11M56 37l-12 1 4 11"/>',
-lightning:'<path d="M36 3L12 35h20l-5 26 27-36H34Z"/><path d="M9 11l6 6m34 31 6 6"/>',
-regen:'<path d="M12 51C12 23 29 9 55 9c-2 28-17 45-43 42Z"/><path d="M12 51c12-16 22-24 39-36M26 37l-1-16m9 7 13 1"/>',
-orb:'<circle cx="32" cy="32" r="14"/><path d="M32 2v12m0 36v12M2 32h12m36 0h12M11 11l9 9m24 24 9 9m0-42-9 9M20 44l-9 9"/><circle cx="32" cy="32" r="5"/>',
-rapidShot:'<path d="M8 16h34l-9-9m9 9-9 9M8 32h44l-9-9m9 9-9 9M8 48h34l-9-9m9 9-9 9"/>',
-revive:'<path d="M32 56S8 40 8 23C8 9 24 8 32 20 40 8 56 9 56 23c0 17-24 33-24 33Z"/><path d="M32 19v26M19 32h26"/>',
+power:'<path d="M15 51L47 13M37 11l12 0 0 12M11 38l14 14M9 44l10 10"/><path d="M22 22l9-9 8 8-9 9z"/><path d="M17 16l-5-5m35 33 5 5"/>',
+rapid:'<path d="M9 44c10-22 25-31 45-30M11 53c14-13 24-17 44-16M7 30c10-13 18-16 30-18"/><path d="M37 9l17 5-9 14M44 31l11 6-11 11"/><path d="M23 28l7-8m-3 20 8-7"/>',
+multi:'<path d="M9 51L41 14m-4-1 5 0 0 6M17 53L49 16m-4-1 5 0 0 6M6 39L34 8m-4-1 5 0 0 6"/><path d="M12 49l-5 2 1-6m10 6-5 2 1-6"/>',
+pierce:'<path d="M10 53L48 11m-14 0h14v14"/><path d="M17 21l25 25M12 31l21 21"/><path d="M8 39l13 14"/>',
+heart:'<path d="M32 54C17 44 9 33 9 23 9 10 25 9 32 21 39 9 55 10 55 23c0 10-8 21-23 31Z"/><path d="M32 23v21m-10-10h20M18 15l-5-6m33 6 5-6"/>',
+armor:'<path d="M32 5l21 9v18c0 12-9 20-21 27-12-7-21-15-21-27V14Z"/><path d="M32 12v39M17 20l15-7 15 7M18 31l14 9 14-9M23 47l9-7 9 7"/>',
+critical:'<circle cx="32" cy="32" r="20"/><path d="M32 8v48M8 32h48M16 16l32 32m0-32L16 48"/><circle cx="32" cy="32" r="5"/>',
+fire:'<path d="M32 6c13 14 0 20 10 29 3-5 4-9 4-13 14 18 7 35-14 35S10 39 23 24c0 11 5 13 9 15 4-13-7-19 0-33Z"/><path d="M32 51c-9-3-7-12 1-21 0 9 8 11 5 17-1 3-3 4-6 4Z"/>',
+ice:'<path d="M32 4v56M8 18l48 28M8 46l48-28M23 11l9 9 9-9M23 53l9-9 9 9M8 27l12-1-4-11M56 37l-12 1 4 11"/><circle cx="32" cy="32" r="5"/>',
+lightning:'<path d="M20 14l24 0 5 16-7 9-20 0-7-9zM27 39v16h10V39"/><path d="M11 8l-6 12 11-3-5 12M53 6l-8 12 12-3-6 13M8 47l-4 10 11-4M55 45l5 10-12-4"/>',
+regen:'<path d="M12 53C11 27 27 11 55 9c-2 30-18 45-43 44Z"/><path d="M12 53c12-17 24-29 40-39M25 39l-3-15m14 4 12 2M29 47l-1-15"/>',
+orb:'<circle cx="32" cy="32" r="13"/><circle cx="32" cy="32" r="7"/><ellipse cx="32" cy="32" rx="25" ry="12" transform="rotate(-35 32 32)"/><path d="M32 4l3 5-3 5-3-5zM56 32l3 4-3 4-3-4zM9 46l3 4-3 4-3-4z"/><circle cx="14" cy="19" r="2"/><circle cx="50" cy="49" r="2"/>',
+rapidShot:'<path d="M9 16h34l-8-7m8 7-8 7M9 32h44l-8-7m8 7-8 7M9 48h34l-8-7m8 7-8 7"/><path d="M17 11l-5 5 5 5m3 6-5 5 5 5"/>',
+revive:'<path d="M32 56C17 46 9 36 9 23c0-13 16-15 23-3 7-12 23-10 23 3 0 13-8 23-23 33Z"/><path d="M32 17v29M20 31h24M15 10l5-5m29 5-5-5"/>',
 storm:'<path d="M34 4L11 34h20l-4 26 27-36H34Z"/><path d="M4 10l8 5M50 50l9 5"/>',
 dragonRain:'<path d="M32 4c14 17-2 19 7 31 4-4 6-8 6-12 15 22 3 34-13 34S11 41 23 27c-1 10 5 11 9 13 3-14-8-22 0-36Z"/>',
 breaker:'<path d="M32 3L49 22 32 61 15 22Z"/><path d="M15 22h34M32 3v58M19 22l13 15 13-15"/>',
 dragonJudgment:'<path d="M32 5l8 16 18 3-13 13 3 20-16-9-16 9 3-20L6 24l18-3Z"/><path d="M32 19v24m-10-12h20"/>'};
 const colors={power:'#ffcc83',rapid:'#ffe27d',multi:'#f4c88e',pierce:'#bb9cff',heart:'#73efae',armor:'#b4d8f1',critical:'#f5c4ff',fire:'#ff8d4b',ice:'#7be4ff',lightning:'#ffe169',regen:'#89f3a4',orb:'#c3a5ff',rapidShot:'#e9cb8b',revive:'#ff8dc5',storm:'#7bdcff',dragonRain:'#ff8549',breaker:'#c7a8ff',dragonJudgment:'#ffd478'};
 function art(id){const color=colors[id]||'#f5d395',shape=motifs[id]||motifs.orb;
- return '<svg class="skill-art-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="技能圖示"><defs><radialGradient id="bg"><stop stop-color="'+color+'" stop-opacity=".27"/><stop offset="1" stop-color="#0b1428"/></radialGradient></defs><rect x="1" y="1" width="62" height="62" rx="12" fill="url(#bg)" stroke="'+color+'" stroke-opacity=".65" stroke-width="1.4"/><g fill="none" stroke="'+color+'" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">'+shape+'</g></svg>';
+ return '<svg class="skill-art-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="北歐神話技能圖示"><defs><radialGradient id="bg"><stop stop-color="'+color+'" stop-opacity=".27"/><stop offset="1" stop-color="#0b1428"/></radialGradient></defs><rect x="1" y="1" width="62" height="62" rx="12" fill="url(#bg)" stroke="'+color+'" stroke-opacity=".65" stroke-width="1.4"/><g fill="none" stroke="'+color+'" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">'+shape+'</g></svg>';
 }
 window.asgardSkillArt=art;
-function upgrade(root){if(!root)return;const cards=root.querySelectorAll('.card,.skill-archive-card,button');cards.forEach(card=>{const heading=card.querySelector('h3');if(!heading)return;const name=heading.textContent||'';const icon=card.querySelector('.icon,.skill-archive-icon');if(!icon||icon.querySelector('svg'))return;const all=(typeof SKILLS!=='undefined'?SKILLS:[]).concat(typeof SUPER_WEAPONS!=='undefined'?SUPER_WEAPONS:[]);const sk=all.find(x=>name.includes(x.name));if(sk)icon.innerHTML=art(sk.id);});}
+function upgrade(root){if(!root)return;const cards=root.querySelectorAll('.card,.skill-archive-card,button');cards.forEach(card=>{const heading=card.querySelector('h3');if(!heading)return;const name=heading.textContent||'';const icon=card.querySelector('.icon,.skill-archive-icon');if(!icon||icon.dataset.norseArt==='v7010')return;const all=(typeof SKILLS!=='undefined'?SKILLS:[]).concat(typeof SUPER_WEAPONS!=='undefined'?SUPER_WEAPONS:[]);const sk=all.find(x=>name.includes(x.name));if(sk){icon.innerHTML=art(sk.id);icon.dataset.norseArt='v7010';}});}
 function init(){const archive=document.getElementById('skillArchiveGrid'),choices=document.getElementById('skillChoices');[archive,choices].forEach(el=>{if(!el)return;new MutationObserver(()=>upgrade(el)).observe(el,{childList:true,subtree:true});upgrade(el);});}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
