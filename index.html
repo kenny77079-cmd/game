@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#111827">
-<title>阿斯嘉特之門：神弓守衛戰 V69-3｜七角色動畫美術測試版</title>
+<title>阿斯嘉特之門：神弓守衛戰 V69-4｜獸潮骷髏與B4D2整合版</title>
 <!-- V46：修正 V41 操作區按鈕間意外輸出的字面 \n 字元；保留 V41 技能聯動及 V40 時間排版。 -->
 <style>
 :root{--bg:#101827;--panel:#182438;--gold:#ffd166;--mint:#74f2ce;--red:#ff6b6b;--text:#f5f7fb;--muted:#aebbd0}
@@ -73,7 +73,7 @@ body.battle-active #xpOuter .xp-track{display:block!important;width:100%!importa
 body.battle-active #xpOuter #xpFill{display:block!important;min-width:0;height:100%!important;background:linear-gradient(90deg,#7c3aed,#a78bfa,#6366f1)!important;box-shadow:0 0 8px rgba(139,92,246,.9),0 0 16px rgba(167,139,250,.65)!important;border-radius:999px!important;}
 /* 本次修正：奧米加卡片圖片內嵌的「角色選擇」字樣位於圖片上緣，僅調整該縮圖裁切位置；不隱藏角色選擇功能 */
 /* V32：巡林新手原圖為直式 3:4 立繪；角色選擇卡片採橫式縮圖，改為從上方裁切，避免臉部被裁掉。僅影響選角卡，不改動原圖及圖鑑／召喚立繪。 */
-#startHeroChoices .hero-pick-rookie .hero-art-thumb{object-position:center center !important; object-fit:contain !important;}
+#startHeroChoices .hero-pick-rookie .hero-art-thumb{object-position:center 30% !important; object-fit:cover !important;}
 .encyclopedia-art{display:block;width:100%;height:125px;object-fit:cover;object-position:center 20%;border-radius:9px;border:1px solid #c9a45e;margin-bottom:7px}
 .hero-pick{overflow:hidden}
 #heroGrid .card{overflow:hidden}#talentHeroGrid .card.selected{border-color:#73e2bd;box-shadow:0 0 0 2px rgba(115,226,189,.22)}#talentHeroGrid .card:disabled{opacity:.45;cursor:not-allowed}
@@ -270,7 +270,7 @@ body.battle-active #xpOuter{display:grid!important;grid-template-columns:28px mi
 <div id="toast"></div>
 <div class="overlay" id="startScreen">
  <div class="panel">
-  <div class="eyebrow">阿斯嘉特之門：神弓守衛戰 V69-3</div>
+  <div class="eyebrow">阿斯嘉特之門：神弓守衛戰 V69-4</div>
   <div style="display:flex;justify-content:center;margin:8px 0 4px"><button class="btn secondary" id="musicToggleMain" type="button" style="padding:8px 16px">♫ 背景音樂：開</button></div>
   <h1>阿斯嘉特之門：神弓守衛戰</h1>
   
@@ -448,7 +448,7 @@ function difficultyWrite(v){try{localStorage.setItem('asgardDifficulty',v)}catch
 const difficultySelect=document.getElementById('difficultySelect');
 if(difficultySelect){difficultySelect.value=difficultyRead();difficultySelect.addEventListener('change',()=>{difficultyWrite(difficultySelect.value);if(difficultySelect.value!=='normal'&&kidModeCheckbox){kidModeCheckbox.checked=false;kidModeWrite(false)}})}
 let kidModeActive=false;
-function dealEnemyDamage(e,raw){const amount=Math.max(1,raw-((e.defense||1)-1));const actual=Math.min(Math.max(0,e.hp),amount);e.hp-=amount;if(player&&selectedHero&&selectedHero.id==='swift'&&(player.ultBuffTimer||0)>0&&(player.swiftUltLifesteal||0)>0&&actual>0){player.hp=Math.min(player.maxHp,player.hp+actual*player.swiftUltLifesteal);}return amount;}
+function dealEnemyDamage(e,raw){const amount=Math.max(1,raw-((e.defense||1)-1));const actual=Math.min(Math.max(0,e.hp),amount);e.hp-=amount;if(actual>0&&player)player.ultCharge=Math.min(100,(player.ultCharge||0)+0.1);if(player&&selectedHero&&selectedHero.id==='swift'&&(player.ultBuffTimer||0)>0&&(player.swiftUltLifesteal||0)>0&&actual>0){player.hp=Math.min(player.maxHp,player.hp+actual*player.swiftUltLifesteal);}return amount;}
 function kidModeEnemy(e){if(e&&!Number.isFinite(e.defense))e.defense=1;if(difficultyMode!=='normal'&&e){e.hp*=2;e.maxHp*=2;e.dmg*=2;e.defense=(e.defense||1)*2;}if(kidModeActive&&e){e.hp=Math.max(.5,e.hp*.5);e.maxHp=Math.max(.5,e.maxHp*.5)}return e}
 function kidModeRead(){try{return localStorage.getItem('endlessBowKidMode')==='1'}catch(_){return false}}
 function kidModeWrite(on){try{localStorage.setItem('endlessBowKidMode',on?'1':'0')}catch(_){}}
@@ -1391,7 +1391,7 @@ if(player.orbs){
   // Orb elemental upgrades apply their own status effects without replacing arrow effects.
   if((player.orbFireLevel||0)>0&&Math.random()<dt*2){e.burnStacks=(e.burnStacks||0)+player.orbFireLevel;e.burnClock=e.burnClock||0;e.burnFlash=.2;}
   if((player.orbIceLevel||0)>0){const il=player.orbIceLevel;e.iceSlow=Math.max(e.iceSlow||0,Math.min(.7,.3+.1*(il-1)));e.iceSlowTimer=Math.max(e.iceSlowTimer||0,.65);if(il>=3&&Math.random()<dt*.5)e.frozenTimer=Math.max(e.frozenTimer||0,Math.min(2.8,2+.2*(il-1)));}
-  if((player.orbLightningLevel||0)>0&&Math.random()<dt*(1+player.orbLightningLevel*.6)){const targets=enemies.filter(t=>t.id!==e.id&&Math.hypot(t.x-e.x,t.y-e.y)<=81).sort((a,b)=>Math.hypot(a.x-e.x,a.y-e.y)-Math.hypot(b.x-e.x,b.y-e.y)).slice(0,Math.min(2+player.orbLightningLevel,6));for(const t of targets){t.hp-=player.atk*.5;t.hit=.08;showDamageNumber(t.x,t.y-t.r,player.atk*.5,false);particles.push({x:e.x,y:e.y,vx:0,vy:0,life:.14,color:'#fde047',lineTo:{x:t.x,y:t.y}});}}
+  if((player.orbLightningLevel||0)>0&&Math.random()<dt*(1+player.orbLightningLevel*.6)){const targets=enemies.filter(t=>t.id!==e.id&&Math.hypot(t.x-e.x,t.y-e.y)<=81).sort((a,b)=>Math.hypot(a.x-e.x,a.y-e.y)-Math.hypot(b.x-e.x,b.y-e.y)).slice(0,Math.min(2+player.orbLightningLevel,6));for(const t of targets){if(t.hp>0)player.ultCharge=Math.min(100,(player.ultCharge||0)+0.1);t.hp-=player.atk*.5;t.hit=.08;showDamageNumber(t.x,t.y-t.r,player.atk*.5,false);particles.push({x:e.x,y:e.y,vx:0,vy:0,life:.14,color:'#fde047',lineTo:{x:t.x,y:t.y}});}}
   if(e.hp<=0)awardEnemyDeath(e);
  }
  rewardDefeatedEnemies();
