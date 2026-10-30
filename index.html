@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<!-- V1.4.14：在壓縮單檔上新增可選 Service Worker 離線快取；保留雙模式、遊戲機制及存檔。 -->
+<!-- V1.4.15：在壓縮單檔上新增可選 Service Worker 離線快取；保留雙模式、遊戲機制及存檔。 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#111827">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="神域之門">
 <meta name="mobile-web-app-capable" content="yes">
-<title>神域之門 V1.4.14｜B6技能與雅典娜專武整合測試版</title>
+<title>神域之門 V1.4.15｜B6技能與雅典娜專武整合測試版</title>
 <!-- V46：修正 V41 操作區按鈕間意外輸出的字面 \n 字元；保留 V41 技能聯動及 V40 時間排版。 -->
 <style>
 :root{--bg:#101827;--panel:#182438;--gold:#ffd166;--mint:#74f2ce;--red:#ff6b6b;--text:#f5f7fb;--muted:#aebbd0}
@@ -382,7 +382,7 @@ body:not(.battle-active) #unifiedBattleHud{display:none!important}
   <header class="v709-header"><div id="realmModePicker" aria-label="切換遊戲模式"><div class="realm-mode-caption">玩法切換</div><button type="button" id="realmModeClassic" class="selected">⚔ 最後防線</button><button type="button" id="realmModeTower">🏰 魔物入侵</button></div>
    <div class="v709-overline">REALM GATE · THE LAST DEFENSE</div>
    <h1>神域之門</h1>
-   <div class="v709-subtitle">最後防線 <span>V1.4.14</span></div>
+   <div class="v709-subtitle">最後防線 <span>V1.4.15</span></div>
    <button class="btn secondary" id="musicToggleMain" type="button">♫ 背景音樂：開</button>
   </header>
   <section class="hero-select-wrap v709-showcase" aria-label="出戰英雄">
@@ -588,7 +588,7 @@ function dealEnemyDamage(e,raw){const amount=Math.max(1,raw-((e.defense||1)-1));
    player.athenaHitCount=(player.athenaHitCount||0)+1;
    if(player.athenaHitCount>=(player.athenaUltTimer>0?5:10)){
     player.athenaHitCount-=(player.athenaUltTimer>0?5:10);
-    // V1.4.14: snapshot targets and use non-recursive shock damage to avoid nested
+    // V1.4.15: snapshot targets and use non-recursive shock damage to avoid nested
     // damage callbacks and monster-list mutation during elite combat on mobile.
     player.athenaShockProcessing=true;
     try{
@@ -688,7 +688,7 @@ function updateSkillChoiceHeader(firstRoute){
   }
   formula.style.display='';
   formula.innerHTML='<strong>超武合成公式：</strong><br>'+SUPER_WEAPONS.map(w=>
-   (w.heroOnly?'尼德霍格專屬：':'')+w.recipe+' → '+w.name
+   (w.heroOnly==='athenaSSR'?'雅典娜專屬：':w.heroOnly==='dragon'?'尼德霍格專屬：':'')+w.recipe+' → '+w.name
   ).join('；<br>');
  }
 }
@@ -3494,7 +3494,7 @@ back.addEventListener('click',switchToClassic);
 })();
 </script>
 
-<!-- V1.4.14：僅 HTTPS/GitHub Pages 註冊離線快取；file:// 仍可直接開啟單檔遊戲。 -->
+<!-- V1.4.15：僅 HTTPS/GitHub Pages 註冊離線快取；file:// 仍可直接開啟單檔遊戲。 -->
 <script>
 (function(){
   if (!('serviceWorker' in navigator) || !/^https?:$/.test(location.protocol)) return;
