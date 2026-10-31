@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<!-- V1.4.17：在壓縮單檔上新增可選 Service Worker 離線快取；保留雙模式、遊戲機制及存檔。 -->
+<!-- V1.4.18：在壓縮單檔上新增可選 Service Worker 離線快取；保留雙模式、遊戲機制及存檔。 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#111827">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="神域之門">
 <meta name="mobile-web-app-capable" content="yes">
-<title>神域之門 V1.4.17｜B6技能與雅典娜專武整合測試版</title>
+<title>神域之門 V1.4.18｜B6技能與雅典娜專武整合測試版</title>
 <!-- V46：修正 V41 操作區按鈕間意外輸出的字面 \n 字元；保留 V41 技能聯動及 V40 時間排版。 -->
 <style>
 :root{--bg:#101827;--panel:#182438;--gold:#ffd166;--mint:#74f2ce;--red:#ff6b6b;--text:#f5f7fb;--muted:#aebbd0}
@@ -382,7 +382,7 @@ body:not(.battle-active) #unifiedBattleHud{display:none!important}
   <header class="v709-header"><div id="realmModePicker" aria-label="切換遊戲模式"><div class="realm-mode-caption">玩法切換</div><button type="button" id="realmModeClassic" class="selected">⚔ 最後防線</button><button type="button" id="realmModeTower">🏰 魔物入侵</button></div>
    <div class="v709-overline">REALM GATE · THE LAST DEFENSE</div>
    <h1>神域之門</h1>
-   <div class="v709-subtitle">最後防線 <span>V1.4.17</span></div>
+   <div class="v709-subtitle">最後防線 <span>V1.4.18</span></div>
    <button class="btn secondary" id="musicToggleMain" type="button">♫ 背景音樂：開</button>
   </header>
   <section class="hero-select-wrap v709-showcase" aria-label="出戰英雄">
@@ -580,15 +580,13 @@ const difficultySelect=document.getElementById('difficultySelect');
 if(difficultySelect){difficultySelect.value=difficultyRead();difficultySelect.addEventListener('change',()=>{difficultyWrite(difficultySelect.value);if(difficultySelect.value!=='normal'&&kidModeCheckbox){kidModeCheckbox.checked=false;kidModeWrite(false)}})}
 let kidModeActive=false;
 function cDamageCharge(){if(player&&running)player.ultCharge=Math.min(100,(player.ultCharge||0)+.01);}
-function dealEnemyDamage(e,raw){const amount=Math.max(1,raw-((e.defense||1)-1));e.hp-=amount;cDamageCharge();
- if(player&&selectedHero&&selectedHero.id==='swift'&&player.swiftUltLifesteal>0)player.hp=Math.min(player.maxHp,player.hp+Math.min(amount,Math.max(0,e.hp+amount))*player.swiftUltLifesteal);
- if(player&&aAthenaHero()){
-  if(athenaHasPallas())player.hp=Math.min(player.maxHp,player.hp+Math.min(amount,Math.max(0,e.hp+amount))*.03);
-  if(!player.athenaShockProcessing){
-   player.athenaHitCount=(player.athenaHitCount||0)+1;
+// V1.4.18：僅直接命中且實際扣血的事件累積雅典娜衝擊波次數。
+function athenaRegisterDirectHit(e,hpBefore){
+ if(!player||!aAthenaHero()||player.athenaShockProcessing||!(hpBefore>e.hp))return;
+ player.athenaHitCount=(player.athenaHitCount||0)+1;
    if(player.athenaHitCount>=10){
     player.athenaHitCount-=10;
-    // V1.4.17: snapshot targets and use non-recursive shock damage to avoid nested
+    // V1.4.18: snapshot targets and use non-recursive shock damage to avoid nested
     // damage callbacks and monster-list mutation during elite combat on mobile.
     player.athenaShockProcessing=true;
     try{
@@ -607,11 +605,20 @@ function dealEnemyDamage(e,raw){const amount=Math.max(1,raw-((e.defense||1)-1));
      }
      D2AthenaArt.shock();burst(player.x,player.y,'#ffe29c',30);
     }finally{player.athenaShockProcessing=false;}
-    rewardDefeatedEnemies();
+    // 死亡結算由外層戰鬥更新流程處理。
    }
-  }
+}
+function dealEnemyDamage(e,raw,athenaDirect=false){
+ if(!e||e.hp<=0)return 0;
+ const hpBefore=e.hp,amount=Math.max(1,raw-((e.defense||1)-1));
+ e.hp-=amount;cDamageCharge();
+ if(player&&selectedHero&&selectedHero.id==='swift'&&player.swiftUltLifesteal>0)player.hp=Math.min(player.maxHp,player.hp+Math.min(amount,hpBefore)*player.swiftUltLifesteal);
+ if(player&&aAthenaHero()&&athenaDirect){
+  if(athenaHasPallas())player.hp=Math.min(player.maxHp,player.hp+Math.min(amount,hpBefore)*.03);
+  athenaRegisterDirectHit(e,hpBefore);
  }
- return amount;}
+ return amount;
+}
 function kidModeEnemy(e){if(e&&!Number.isFinite(e.defense))e.defense=1;if(difficultyMode!=='normal'&&e){e.hp*=2;e.maxHp*=2;e.dmg*=2;e.defense=(e.defense||1)*2;}if(kidModeActive&&e){e.hp=Math.max(.5,e.hp*.5);e.maxHp=Math.max(.5,e.maxHp*.5)}return e}
 function kidModeRead(){try{return localStorage.getItem('endlessBowKidMode')==='1'}catch(_){return false}}
 function kidModeWrite(on){try{localStorage.setItem('endlessBowKidMode',on?'1':'0')}catch(_){}}
@@ -654,7 +661,7 @@ function athenaPallasThrust(primary){
  const ox=player.x,oy=player.y,angle=Math.atan2(primary.y-oy,primary.x-ox),ux=Math.cos(angle),uy=Math.sin(angle);
  const range=A_ATHENA_RANGE+75,width=21;
  const targets=enemies.filter(e=>e.hp>0&&e!==primary).map(e=>{const dx=e.x-ox,dy=e.y-oy;return {e,forward:dx*ux+dy*uy,side:Math.abs(dx*uy-dy*ux)}}).filter(o=>o.forward>=0&&o.forward<=range+cMonsterHitRadius(o.e)&&o.side<=width+cMonsterHitRadius(o.e)).sort((a,b)=>a.forward-b.forward).slice(0,5);
- for(const o of targets){const e=o.e,amount=Math.max(1,player.atk*.5-((e.defense||1)-1));e.hp-=amount;cDamageCharge();player.hp=Math.min(player.maxHp,player.hp+amount*.03);e.hit=.12;showDamageNumber(e.x,e.y-e.r,amount,false);}
+ for(const o of targets){const e=o.e,amount=Math.max(1,player.atk*.5-((e.defense||1)-1));const dealt=dealEnemyDamage(e,player.atk*.5,true);e.hit=.12;showDamageNumber(e.x,e.y-e.r,dealt,false);}
  player.athenaPallasFlash=elapsed+.17;
 }
  // 與守護光球旋轉半徑一致
@@ -923,7 +930,7 @@ function castUltimate(){if(jotunWorldFreeze>0){toast('❄ 世界凍結中，無�
   return defeated;
  };
  if(hero.id==='athenaSSR'){
-  player.athenaUltTimer=5;player.athenaUltHealClock=0;player.athenaHitCount=0;player.atk*=3;player.rate+=5;D2AthenaArt.ult();
+  player.athenaUltTimer=5;player.athenaUltHealClock=0;player.atk*=3;player.rate+=5;D2AthenaArt.ult();
   burst(player.x,player.y,'#f9d77a',36);toast('雅典娜的驕傲！5 秒內攻擊力 ×3、攻速 +5，每秒恢復 10% 生命！');
  }else if(hero.id==='rookie'){
   // 18 顆子彈均勻環形分布（每 20 度一顆），快照施放當下已擁有技能及等級。
@@ -1105,7 +1112,7 @@ function shoot(){
   }
   rewardDefeatedEnemies();
   const rapid=Math.max(0,Math.floor(player.rapidShot||0));
-  for(let n=1;n<=rapid;n++)rapidShotQueue.push({at:elapsed+n*.25,fire:()=>{if(!running||!player||!aAthenaHero())return;const hits=enemies.filter(e=>e.hp>0&&Math.hypot(e.x-player.x,e.y-player.y)<=A_ATHENA_RANGE+cMonsterHitRadius(e));if(!hits.length)return;const closest=hits.reduce((a,b)=>((a.x-player.x)**2+(a.y-player.y)**2)<=((b.x-player.x)**2+(b.y-player.y)**2)?a:b);omegaAim=Math.atan2(closest.y-player.y,closest.x-player.x);player.athenaSpearUntil=elapsed+.14;athenaPallasThrust(closest);for(let i=0;i<count;i++){const e=hits[i%hits.length];if(e.hp<=0)continue;const dealt=dealEnemyDamage(e,player.atk);showDamageNumber(e.x,e.y-e.r,dealt,false);for(let j=1;j<=Math.max(0,player.pierce||0)&&j<hits.length;j++){const extra=hits[(i+j)%hits.length];if(extra===e||extra.hp<=0)continue;const dmg=dealEnemyDamage(extra,player.atk);showDamageNumber(extra.x,extra.y-extra.r,dmg,false);}}rewardDefeatedEnemies();}});
+  for(let n=1;n<=rapid;n++)rapidShotQueue.push({at:elapsed+n*.25,fire:()=>{if(!running||!player||!aAthenaHero())return;const hits=enemies.filter(e=>e.hp>0&&Math.hypot(e.x-player.x,e.y-player.y)<=A_ATHENA_RANGE+cMonsterHitRadius(e));if(!hits.length)return;const closest=hits.reduce((a,b)=>((a.x-player.x)**2+(a.y-player.y)**2)<=((b.x-player.x)**2+(b.y-player.y)**2)?a:b);omegaAim=Math.atan2(closest.y-player.y,closest.x-player.x);player.athenaSpearUntil=elapsed+.14;athenaPallasThrust(closest);for(let i=0;i<count;i++){const e=hits[i%hits.length];if(e.hp<=0)continue;const dealt=dealEnemyDamage(e,player.atk,true);showDamageNumber(e.x,e.y-e.r,dealt,false);for(let j=1;j<=Math.max(0,player.pierce||0)&&j<hits.length;j++){const extra=hits[(i+j)%hits.length];if(extra===e||extra.hp<=0)continue;const dmg=dealEnemyDamage(extra,player.atk,true);showDamageNumber(extra.x,extra.y-extra.r,dmg,false);}}rewardDefeatedEnemies();}});
   rapidShotQueue.sort((a,b)=>a.at-b.at);
   return;
  }
@@ -2630,7 +2637,7 @@ function athenaNearestMeleeTarget(){
  }
  return best;
 }
-// V1.4.17: Athena gold orbit aura; purely visual, no collision or combat changes.
+// V1.4.18: Athena gold orbit aura; purely visual, no collision or combat changes.
 function drawAthenaGoldenAura(front){
  if(!player||!selectedHero||selectedHero.id!=='athenaSSR')return;
  const x=player.x,y=player.y,t=elapsed||0;
@@ -3527,7 +3534,7 @@ back.addEventListener('click',switchToClassic);
 })();
 </script>
 
-<!-- V1.4.17：僅 HTTPS/GitHub Pages 註冊離線快取；file:// 仍可直接開啟單檔遊戲。 -->
+<!-- V1.4.18：僅 HTTPS/GitHub Pages 註冊離線快取；file:// 仍可直接開啟單檔遊戲。 -->
 <script>
 (function(){
   if (!('serviceWorker' in navigator) || !/^https?:$/.test(location.protocol)) return;
