@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
+<!-- V1.4.34：永久強化頁面緊湊化（英雄改 5 欄小頭像、能力改 3 欄、隱藏重複說明），手機盡量一頁顯示。 -->
 <!-- V1.4.33：每個存檔一次性「免費 50 抽」按鈕（用完即隱藏，旗標 free50Used 存在該存檔）。 -->
 <!-- V1.4.32：升星系統：N／R／SR 改用重複卡升星（★10＝六項全滿），★10 後重複卡轉英魂；SSR／UR 永久強化可用金幣或英魂；SSR 重複返還 500 金幣＋50 英魂；舊存檔自動轉換並退還金幣；開始記錄抽卡統計。 -->
 <!-- V1.4.31：操作配置左右對調；技能圖鑑新增超武／專武頁；六把超武專武特效升級；魔物入侵九位英雄絕招光影重繪。 -->
@@ -20,7 +21,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="神域之門">
 <meta name="mobile-web-app-capable" content="yes">
-<title>神域之門 V1.4.33｜升星系統＋免費 50 抽版</title>
+<title>神域之門 V1.4.34｜升星系統＋免費 50 抽版</title>
 <!-- V46：修正 V41 操作區按鈕間意外輸出的字面 \n 字元；保留 V41 技能聯動及 V40 時間排版。 -->
 <style>
 :root{--bg:#101827;--panel:#182438;--gold:#ffd166;--mint:#74f2ce;--red:#ff6b6b;--text:#f5f7fb;--muted:#aebbd0}
@@ -409,7 +410,7 @@ body:not(.battle-active) #unifiedBattleHud{display:none!important}
    <div id="realmTrialPicker" aria-label="諸神試煉入口"><div class="realm-mode-caption">新玩法</div><button type="button" id="realmModeTrial">⚡ 諸神試煉</button></div>
    <div class="v709-overline">REALM GATE · THE LAST DEFENSE</div>
    <h1>神域之門</h1>
-   <div class="v709-subtitle">最後防線 <span>V1.4.33</span></div>
+   <div class="v709-subtitle">最後防線 <span>V1.4.34</span></div>
    <button class="btn secondary" id="musicToggleMain" type="button">♫ 背景音樂：開</button>
   </header>
   <section class="hero-select-wrap v709-showcase" aria-label="出戰英雄">
@@ -461,6 +462,7 @@ body:not(.battle-active) #unifiedBattleHud{display:none!important}
    <div class="stat"><b id="attackTalentLevel">Lv.0</b><span>攻擊強化</span></div>
    <div class="stat"><b id="magnetTalentLevel">Lv.0</b><span>磁吸強化</span></div>
   </div>
+  <div class="talent-hero-title" id="talentHeroTitle"></div>
   <div class="card star-panel hidden" id="starPanel"></div>
   <div class="grid" id="talentGrid">
    <div class="card"><div class="icon">⚔️</div><h3>攻擊力提升</h3><p>每級提升所選角色基礎攻擊力 10%。</p><p id="attackTalentDetail"></p><button class="btn" id="buyAttackTalent" style="width:100%;margin-top:10px">購買</button></div>
@@ -568,14 +570,14 @@ function renderStarExtras(hero){
   let sb=button.nextElementSibling&&button.nextElementSibling.classList.contains('soul-buy')?button.nextElementSibling:null;
   if(!sb){sb=document.createElement('button');sb.type='button';sb.className='btn secondary soul-buy';sb.style.cssText='width:100%;margin-top:6px';sb.onclick=()=>buyTalentSoul(def.id);button.after(sb);}
   const level=(save.heroUpgrades[hero.id]||{})[def.id]||0;
-  if(star){button.textContent='由升星提升（★'+(save.stars[hero.id]||0)+'）';button.disabled=true;button.style.opacity='.55';sb.style.display='none';if(detail)detail.textContent=`${hero.name}（${hero.rarity}）｜${def.desc(level)}｜目前 ★${save.stars[hero.id]||0}`;}
+  if(star){button.textContent='由升星提升';button.disabled=true;button.style.opacity='.55';sb.style.display='none';if(detail)detail.textContent=`Lv.${level}｜${def.desc(level)}`;}
   else{const need=Math.ceil(talentCost(hero.id,def.id)/SOUL_COIN);sb.style.display=level>=10?'none':'';sb.textContent='用英魂 · '+need;sb.disabled=(save.soul||0)<need;sb.style.opacity=sb.disabled?'.55':'1';}
  }
  if(!sp)return;
  if(!star){sp.classList.add('hidden');return;}
  const st=save.stars[hero.id]||0,mat=save.starMat[hero.id]||0,need=st>=10?0:STAR_COST[hero.rarity][st],total=STAR_COST[hero.rarity].reduce((a,b)=>a+b,0);
  sp.classList.remove('hidden');
- sp.innerHTML=`<div class="star-row">${'★'.repeat(st)}<span class="star-off">${'★'.repeat(10-st)}</span></div><h3>${hero.name}・★${st}/10</h3><p>${st>=10?'已達最高星等。之後抽到重複會轉成英魂（每張 '+SOUL_PER_DUP[hero.rarity]+'），可用來強化 SSR／UR。':'升星材料：<b>'+mat+' / '+need+'</b>（抽到重複的「'+hero.name+'」即可獲得）'}</p><p class="small">每升 1 星，六項能力全部 +1 級。${hero.rarity} 從 ★0 升到 ★10 共需 ${total} 張。</p><button class="btn" id="starUpBtn" type="button" style="width:100%;margin-top:8px" ${st>=10||mat<need?'disabled':''}>${st>=10?'已達 ★10':'升星 → ★'+(st+1)}</button>`;
+ sp.innerHTML=`<div class="star-row">${'★'.repeat(st)}<span class="star-off">${'★'.repeat(10-st)}</span></div><div class="star-line"><span>${st>=10?'已達最高星等，重複卡轉英魂（每張 '+SOUL_PER_DUP[hero.rarity]+'）':'升星材料 <b>'+mat+' / '+need+'</b>'}</span><button class="btn" id="starUpBtn" type="button" ${st>=10||mat<need?'disabled':''}>${st>=10?'已達 ★10':'升星 → ★'+(st+1)}</button></div><p class="small">抽到重複的「${hero.name}」得材料；每升 1 星六項能力 +1 級，${hero.rarity} 升滿共需 ${total} 張。</p>`;
  const b=$('starUpBtn');if(b)b.onclick=()=>starUp(hero.id);
 }
 function starUp(id){
@@ -3435,7 +3437,7 @@ function renderTalentPanel(){
   b.style.cssText='text-align:left;'+(unlocked?'':'opacity:.45');
   if(unlocked){
    const art=HERO_ART[h.id];
-   b.innerHTML='<img class="talent-hero-art" src="'+(art||'')+'" alt="'+h.name+'"><h3>'+h.name+'</h3><p>'+h.rarity+' 級角色'+(isStarHero(h)?' ・<span style="color:#fcd34d">★'+(save.stars[h.id]||0)+'</span>':'')+'</p><p class="small">攻擊 Lv.'+(upgrades.attack||0)+' · 攻速 Lv.'+(upgrades.rate||0)+' · 生命 Lv.'+(upgrades.hp||0)+'</p>';
+   b.innerHTML='<img class="talent-hero-art" src="'+(art||'')+'" alt="'+h.name+'"><h3>'+h.name+'</h3><p>'+h.rarity+(isStarHero(h)?' <span style="color:#fcd34d">★'+(save.stars[h.id]||0)+'</span>':'')+'</p><p class="small">攻擊 Lv.'+(upgrades.attack||0)+' · 攻速 Lv.'+(upgrades.rate||0)+' · 生命 Lv.'+(upgrades.hp||0)+'</p>';
    if(!art){b.querySelector('img').replaceWith(Object.assign(document.createElement('div'),{className:'icon',textContent:h.icon}));}
   }else{
    b.innerHTML='<div class="icon">🔒</div><h3>尚未解鎖</h3><p>'+h.rarity+' 級角色</p><p class="small">尚未開放培養</p>';
@@ -3446,11 +3448,12 @@ function renderTalentPanel(){
  const hero=HEROES.find(h=>h.id===talentHeroId)||HEROES[0];
  const t=save.heroUpgrades[hero.id];
  $('talentCoins').textContent=String(coins);
+ { const tt=$('talentHeroTitle');if(tt)tt.innerHTML='<b>'+hero.name+'</b>（'+hero.rarity+'）'+(isStarHero(hero)?'・<span style="color:#fcd34d">★'+(save.stars[hero.id]||0)+'/10</span>・升星成長':'・金幣／英魂強化'); }
  $('attackTalentLevel').textContent='Lv.'+t.attack;
  $('magnetTalentLevel').textContent='Lv.'+t.magnet;
  for(const def of TALENT_TYPES){
   const level=t[def.id]||0,cost=talentCost(hero.id,def.id),detail=$(def.detailId),button=$(def.buttonId);
-  if(detail)detail.textContent=`${hero.name}（${hero.rarity}）｜${def.desc(level)}｜${level>=10?'已達上限 10/10':'費用 '+cost+' 金幣'}`;
+  if(detail)detail.textContent=`Lv.${level}｜${def.desc(level)}`;
   if(button){button.textContent=level>=10?'已達上限 10/10':`升級 · ${cost} 金幣`;button.disabled=level>=10||coins<cost;button.style.opacity=(level>=10||coins<cost)?'.55':'1';}
  }
  renderStarExtras(hero);
@@ -3853,7 +3856,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 })();
 </script>
 <div id="slotGate" class="open" role="dialog" aria-label="選擇存檔"><div class="sg-wrap"><div class="sg-over">REALM GATE</div><h1>神域之門</h1><div class="sg-sub">請選擇存檔，進入後可自由切換三種玩法</div><div id="slotGateList"></div><div class="sg-hint">三種玩法共用同一份存檔：英雄、金幣與各玩法進度都依存檔欄位分開保存。<br>建議定期在「存檔管理」匯出備份。</div></div></div>
-<style id="v1429layout">body.hand-right #stickBase{left:auto!important;right:16px!important}body.hand-right #stickZone{left:auto!important;right:0!important}body.hand-right #ultBtn,body.hand-right #pauseBtn{right:auto!important;left:12px!important}body:not(.battle-active) #stickZone{display:none!important}#leftHud .hero-hp-line{display:flex!important;align-items:center!important;gap:4px!important;flex-wrap:nowrap!important;white-space:nowrap!important;overflow:hidden!important;font-size:clamp(8px,2.35vw,12px)!important;line-height:1.25!important}#leftHud .hero-hp-line>span{flex:none!important;margin-left:0!important;font-size:inherit!important}#ultBtn{right:12px!important;bottom:calc(66px + env(safe-area-inset-bottom))!important;width:70px!important;height:70px!important}#pauseBtn{right:12px!important;bottom:calc(148px + env(safe-area-inset-bottom))!important}#fenrirTestBtn{top:calc(env(safe-area-inset-top) + 152px)!important;bottom:auto!important;right:12px!important}</style>
+<style id="v1429layout">#talentScreen .panel{padding:10px 10px 12px!important}#talentScreen .panel>.eyebrow{display:none!important}#talentScreen .panel>h2{margin:0 0 2px!important;font-size:19px!important}#talentScreen .panel>p{font-size:11px!important;line-height:1.35!important;margin:0 0 6px!important}#talentScreen .panel>p.small{display:none!important}#talentHeroGrid{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:4px!important;margin:0 0 6px!important}#talentHeroGrid .card{padding:3px 2px 4px!important;min-height:0!important;text-align:center!important;border-radius:9px!important}#talentScreen #talentHeroGrid > button.card .talent-hero-art,#talentScreen #talentHeroGrid > button.card img{display:block!important;width:100%!important;height:46px!important;max-height:46px!important;object-fit:cover!important;object-position:center 15%!important;margin:0 0 2px!important;border-radius:6px!important;border-width:1px!important}#talentHeroGrid .card .icon{font-size:18px!important;height:46px!important;margin:0 0 2px!important;display:flex!important;align-items:center;justify-content:center}#talentHeroGrid .card h3{font-size:10px!important;line-height:1.2!important;margin:0!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#talentHeroGrid .card p{font-size:9px!important;line-height:1.2!important;margin:0!important;white-space:nowrap}#talentHeroGrid .card p.small{display:none!important}#talentScreen .stats{display:grid!important;grid-template-columns:1fr 1fr!important;gap:6px!important;margin:0 0 6px!important}#talentScreen .stats .stat:nth-child(n+3){display:none!important}#talentScreen .stats .stat{padding:4px 6px!important;min-height:0!important}#talentScreen .stats .stat b{font-size:16px!important}#talentScreen .stats .stat span{font-size:10px!important}.talent-hero-title{font-size:13px;margin:0 0 6px;color:#cbd5e1;text-align:center}.talent-hero-title b{color:#fff3c4}#talentScreen .star-panel{padding:6px 8px!important;margin:0 0 6px!important;min-height:0!important;height:auto!important}#talentScreen .star-panel .star-row{font-size:15px!important;letter-spacing:1px!important}#talentScreen .star-panel .star-line{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;margin-top:3px}#talentScreen .star-panel .star-line .btn{width:auto!important;padding:6px 12px!important;font-size:12px!important;margin:0!important;flex:none}#talentScreen .star-panel p.small{font-size:10px!important;margin:3px 0 0!important;color:#94a3b8}@media (max-height:740px){#talentScreen .star-panel p.small,#talentScreen .panel>p{display:none!important}#talentScreen .panel>h2{font-size:17px!important;margin-bottom:6px!important}}#talentGrid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:5px!important}#talentGrid .card{padding:6px 5px!important;text-align:center!important;min-height:0!important}#talentGrid .card .icon{font-size:17px!important;margin:0!important;line-height:1.1!important}#talentGrid .card h3{font-size:12px!important;margin:2px 0!important;line-height:1.2!important}#talentGrid .card>p:not([id]){display:none!important}#talentGrid .card p[id]{font-size:10px!important;line-height:1.3!important;margin:0!important;color:#cbd5e1}#talentGrid .card .btn{margin-top:5px!important;padding:6px 3px!important;font-size:11px!important;line-height:1.2!important;min-height:0!important}#talentScreen .panel>.row{margin-top:6px!important}#talentScreen .panel>.row .btn{padding:8px!important}body.hand-right #stickBase{left:auto!important;right:16px!important}body.hand-right #stickZone{left:auto!important;right:0!important}body.hand-right #ultBtn,body.hand-right #pauseBtn{right:auto!important;left:12px!important}body:not(.battle-active) #stickZone{display:none!important}#leftHud .hero-hp-line{display:flex!important;align-items:center!important;gap:4px!important;flex-wrap:nowrap!important;white-space:nowrap!important;overflow:hidden!important;font-size:clamp(8px,2.35vw,12px)!important;line-height:1.25!important}#leftHud .hero-hp-line>span{flex:none!important;margin-left:0!important;font-size:inherit!important}#ultBtn{right:12px!important;bottom:calc(66px + env(safe-area-inset-bottom))!important;width:70px!important;height:70px!important}#pauseBtn{right:12px!important;bottom:calc(148px + env(safe-area-inset-bottom))!important}#fenrirTestBtn{top:calc(env(safe-area-inset-top) + 152px)!important;bottom:auto!important;right:12px!important}</style>
 <div id="realmTowerOverlay" aria-hidden="true"><div id="realmTowerTop"><button type="button" id="realmTowerBack">‹ 返回最後防線</button><span>🏰 神域之門：魔物入侵</span></div><iframe id="realmTowerFrame" title="神域之門：魔物入侵" loading="lazy" allow="autoplay"></iframe></div>
 <script id="realmTowerIntegration">
 (function(){
