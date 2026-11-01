@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
+<!-- V1.4.29：HUD 同一排、右下按鈕重排、畫面特效等級與數量上限（修後期 lag）、精英／Boss 寶箱節奏、鳳凰之息燃燒上限與刪除復活、冰系冰爆與冰凍冷卻、Boss／芬里爾可冰凍、芬里爾裂縫禁行區與撕裂新裂縫。 -->
 <!-- V1.4.28：諸神試煉難度調整與 Combo 修正、主畫面上抬；角色能力全角色優化（斯卡迪寒意、曼尼斯基礎燃燒、烏勒爾攻速、薩堤爾森林之力、雅典娜攻速 bug、魔物入侵四名英雄被動）；最後防線 HUD 顯示每秒回血。 -->
 <!-- V1.4.27：諸神試煉新增暫停鈕（倒數凍結、切到背景自動暫停）。 -->
 <!-- V1.4.26：魔物入侵英雄選擇依稀有度排列（N→R→SR→SSR→UR）。 -->
@@ -15,7 +16,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="神域之門">
 <meta name="mobile-web-app-capable" content="yes">
-<title>神域之門 V1.4.28｜全角色優化與試煉難度版</title>
+<title>神域之門 V1.4.29｜最後防線後期平衡與效能版</title>
 <!-- V46：修正 V41 操作區按鈕間意外輸出的字面 \n 字元；保留 V41 技能聯動及 V40 時間排版。 -->
 <style>
 :root{--bg:#101827;--panel:#182438;--gold:#ffd166;--mint:#74f2ce;--red:#ff6b6b;--text:#f5f7fb;--muted:#aebbd0}
@@ -374,7 +375,7 @@ body:not(.battle-active) #unifiedBattleHud{display:none!important}
     <div id="leftHud" class="pill">
       <div class="hero-hud-top"><b id="heroName">奧米加</b><span id="levelText">Lv.1</span></div>
       <div class="bar"><div id="hpFill" class="fill"></div></div>
-      <div class="hero-hp-line"><span id="hpText">100 / 100 HP</span><span id="reviveCountText" style="margin-left:10px;color:#f9a8d4;font-weight:700">💖 死者甦醒 ×0</span><span id="regenRateText" style="margin-left:8px;color:#86efac;font-weight:700"></span></div>
+      <div class="hero-hp-line"><span id="hpText">100 / 100 HP</span><span id="reviveCountText" style="margin-left:10px;color:#f9a8d4;font-weight:700">💖×0</span><span id="regenRateText" style="margin-left:8px;color:#86efac;font-weight:700"></span></div>
     </div>
     <div id="centerHud" class="pill">
       <div class="kill-line"><span>☠️</span><b id="killText">擊倒 0</b></div>
@@ -404,7 +405,7 @@ body:not(.battle-active) #unifiedBattleHud{display:none!important}
    <div id="realmTrialPicker" aria-label="諸神試煉入口"><div class="realm-mode-caption">新玩法</div><button type="button" id="realmModeTrial">⚡ 諸神試煉</button></div>
    <div class="v709-overline">REALM GATE · THE LAST DEFENSE</div>
    <h1>神域之門</h1>
-   <div class="v709-subtitle">最後防線 <span>V1.4.28</span></div>
+   <div class="v709-subtitle">最後防線 <span>V1.4.29</span></div>
    <button class="btn secondary" id="musicToggleMain" type="button">♫ 背景音樂：開</button>
   </header>
   <section class="hero-select-wrap v709-showcase" aria-label="出戰英雄">
@@ -471,7 +472,7 @@ body:not(.battle-active) #unifiedBattleHud{display:none!important}
  <div class="panel"><div class="eyebrow">ULTIMATE WEAPON FUSION</div><h2>超武合成</h2><p>指定的兩項技能都已達 Lv.5！合成會額外獲得超武，原本技能與效果都會保留。每種超武每場冒險只能合成一次。</p><div class="grid" id="fusionChoices"></div><div class="row" style="margin-top:12px"><button class="btn secondary" id="fusionSkipBtn">稍後再說</button></div></div>
 </div>
 <div class="overlay hidden" id="pauseScreen">
- <div class="panel"><div class="eyebrow">PAUSED</div><h2>休息一下</h2><p>冒險進度會在本機保存部分永久資料。</p><div class="row"><button class="btn" id="resumeBtn">繼續戰鬥</button><button class="btn secondary" id="quitBtn">回主選單</button></div><div class="row" style="margin-top:10px"><button class="btn secondary" id="musicTogglePause" type="button">♫ 背景音樂：開</button></div></div>
+ <div class="panel"><div class="eyebrow">PAUSED</div><h2>休息一下</h2><p>冒險進度會在本機保存部分永久資料。</p><div class="row"><button class="btn" id="resumeBtn">繼續戰鬥</button><button class="btn secondary" id="quitBtn">回主選單</button></div><div class="row" style="margin-top:10px"><button class="btn secondary" id="musicTogglePause" type="button">♫ 背景音樂：開</button><button class="btn secondary" id="fxModeBtn" type="button">✨ 特效：自動</button></div></div>
 </div>
 <div class="overlay hidden" id="gameOverScreen">
  <div class="panel"><div class="eyebrow">RUN COMPLETE</div><h2>本次冒險結束</h2><p id="resultSummary">你已經盡力了！</p><div class="stats"><div class="stat"><b id="endTime">00:00</b><span>存活時間</span></div><div class="stat"><b id="endKills">0</b><span>擊倒怪物</span></div><div class="stat"><b id="endCoins">0</b><span>獲得金幣</span></div></div><div class="row"><button class="btn" id="retryBtn">再戰一次</button><button class="btn secondary" id="homeBtn">回主選單</button></div></div>
@@ -492,8 +493,8 @@ const HEROES=[ {id:'rookie',name:'奧米加',rarity:'N',icon:'🏹',desc:'天賦
 {id:'heart',name:'伊登的蘋果',icon:'💚',desc:'最大生命 +25，並恢復 25 點生命。',apply:p=>{p.maxHp+=25;p.hp=Math.min(p.maxHp,p.hp+25)}},
 {id:'armor',name:'硬化皮膚',icon:'🛡️',desc:'護甲 +1，減少受到的傷害。',apply:p=>p.armor++},
 {id:'critical',name:'重創',icon:'✨',desc:'暴擊率每級 +8%，最高 50%；暴擊傷害倍率每級 +0.25，技能最高 Lv.5。',apply:p=>{p.crit=Math.min(.50,p.crit+.08);p.critDamage=(p.critDamage||2)+.25}},
-{id:'fire',name:'鳳凰之息',icon:'🔥',desc:'箭矢命中附加 1 層燃燒；每 0.5 秒每層造成 1 點傷害，可持續疊加。Lv.5 燃燒擊殺後，在死亡位置生成半徑 10、持續 3 秒的火場，每 0.5 秒造成 100% 攻擊力傷害。',apply:p=>p.fire+=5},
-{id:'ice',name:'斯卡蒂之擊',icon:'❄️',desc:'箭矢化為藍色冰錐。命中使敵人緩速 30%；同一敵人累計命中 5 支冰箭後冰凍 2 秒。每次升級緩速 +10%、冰凍 +0.2 秒，最高 70%／2.8 秒。',apply:p=>{p.iceLevel=Math.min(5,(p.iceLevel||0)+1)}},
+{id:'fire',name:'鳳凰之息',icon:'🔥',desc:'箭矢命中附加燃燒（每級 +1 層）；每 0.5 秒每層造成 1 點傷害。每隻敵人最多 10×等級 層，3 秒未再被燃燒命中會逐漸消退。Lv.5 燃燒擊殺後，在死亡位置生成半徑 10、持續 3 秒的火場，每 0.5 秒造成 100% 攻擊力傷害。',apply:p=>p.fire+=5},
+{id:'ice',name:'斯卡蒂之擊',icon:'❄️',desc:'箭矢化為藍色冰錐。命中使敵人緩速 30%；同一敵人累計命中 5 支冰箭後冰凍 2 秒。每次升級緩速 +10%、冰凍 +0.2 秒，最高 70%／2.8 秒。同一敵人解凍後 5 秒內不會再被冰凍；Boss 也可被冰凍（冰凍中攻擊頻率 −70%，芬里爾最多 1.3 秒）。Lv.5 解凍時冰爆：攻擊力 ×5，冰凍期間每中一支冰箭 +0.2 倍，最高 ×15。',apply:p=>{p.iceLevel=Math.min(5,(p.iceLevel||0)+1)}},
 {id:'lightning',name:'索爾之牙',icon:'⚡',desc:'箭矢化為黃色閃電，命中後連鎖周圍敵人，初始最多 2 隻，每次升級額外連鎖 2 隻。連鎖半徑 243；每級 2/4/6/8/10 次，Lv.5 僅主箭可將剩餘連鎖次數集中回擊原目標（100% 起每次遞減 10%，最低 20%）。',apply:p=>{p.lightningLevel=(p.lightningLevel||0)+1}}, 
 {id:'regen',name:'精靈祝福',icon:'🌿',desc:'每秒恢復 0.7 點生命。',apply:p=>p.regen+=.7},
 {id:'orb',name:'守護光球',icon:'🪄',desc:'Lv.1 兩顆，每級 +1，最多六顆；依本局選定的單一元素路線附魔。',apply:p=>{const lv=Math.min(5,(p.orbLevel||0)+1);p.orbLevel=lv;p.orbs=Math.min(6,lv+1);}},
@@ -674,6 +675,11 @@ function dealEnemyDamage(e,raw,athenaDirect=false){
 }
 // V1.4.28 角色能力常數（暫定值，待技能數值確認）
 const SKADI_CHILL_DUR=2,SKADI_BASE_SLOW=.15,MANNIS_BASE_BURN=1,ULLER_TALENT_RATE=1.3,ULLER_TALENT_CD=15,SATYR_FORCE_MAX=30,SATYR_PULSE_RADIUS=160,SATYR_PULSE_MULT=4;
+// V1.4.29：燃燒層數上限 10×鳳凰之息等級（曼尼斯無附魔基礎燃燒上限 10），3 秒未再被燃燒命中則逐步消退
+function burnStackCap(){const lv=skillLevel('fire');return lv>0?10*lv:10}
+function addBurnStacks(e,n){if(!e||n<=0)return;e.burnStacks=Math.min(burnStackCap(),(e.burnStacks||0)+n);e.burnLastHit=elapsed;}
+// V1.4.29：冰凍時間（芬里爾最多 1.3 秒）
+function freezeDurFor(e,d){return e&&e.type==='finalBoss'?Math.min(1.3,d):d}
 // V1.4.28：每秒持續回血（實際回血與 HUD 共用）
 function currentRegenPerSec(){if(!player||!selectedHero)return 0;let r=player.regen||0;const id=selectedHero.id;if(id==='guardian')r+=1.8;else if(id==='moon')r+=.5;else if(id==='dragon')r+=.8;else if(id==='yggdrasilUR')r+=player.maxHp*.015;if(player.orbitUltTimer>0)r+=player.maxHp*.02;return r;}
 // V1.4.28：雅典娜絕招期間套用技能，先扣除 +5 攻速再加回，避免乘法殘留
@@ -697,7 +703,7 @@ if(startingSkillId){
  const sk=SKILLS.find(x=>x.id===startingSkillId);
  if(sk){sk.apply(player);player.skills.push(startingSkillId);}
 }
-skadiFrostRainVfx.length=0;phoenixFireFields=[];enemies=[];bullets=[];gems=[];particles=[];damageTexts=[];chests=[];hostileShots=[];rapidShotQueue=[];elapsed=0;jotunReset();spawnClock=0;attackClock=.2;runCoins=0;runEarned=0;runBanked=false;runPartBanked=0;player.ultCharge=0;player.ultReady=false;player.athenaHitCount=0;player.athenaUltTimer=0;player.athenaUltHealClock=0;player.athenaSpearUntil=0;specialEventClock=60;lastSpecialKill=0;specialEventIndex=0;finalBossSpawned=false;enemyId=0;smallKillCount=0;megaEliteCount=0;running=true;paused=false;screen='game';$('fenrirTestBtn').style.display=fenrirPrivateEnabled?'block':'none';BowAudio.setFenrirBattle(false);show(null);$('heroName').textContent=h.name+(jotunStage===2?' ❄':'');$('pauseBtn').textContent='Ⅱ 暫停';last=performance.now();cancelAnimationFrame(raf);raf=requestAnimationFrame(loop)}
+skadiFrostRainVfx.length=0;phoenixFireFields=[];fenrirCracks=[];enemies=[];bullets=[];gems=[];particles=[];damageTexts=[];chests=[];hostileShots=[];rapidShotQueue=[];elapsed=0;jotunReset();spawnClock=0;attackClock=.2;runCoins=0;runEarned=0;runBanked=false;runPartBanked=0;player.ultCharge=0;player.ultReady=false;player.athenaHitCount=0;player.athenaUltTimer=0;player.athenaUltHealClock=0;player.athenaSpearUntil=0;specialEventClock=60;lastSpecialKill=0;specialEventIndex=0;finalBossSpawned=false;enemyId=0;smallKillCount=0;megaEliteCount=0;running=true;paused=false;screen='game';$('fenrirTestBtn').style.display=fenrirPrivateEnabled?'block':'none';BowAudio.setFenrirBattle(false);show(null);$('heroName').textContent=h.name+(jotunStage===2?' ❄':'');$('pauseBtn').textContent='Ⅱ 暫停';last=performance.now();cancelAnimationFrame(raf);raf=requestAnimationFrame(loop)}
 function tryHeroRevive(){
  if(selectedHero.id==='rookie'&&!player.rookieRevived){
   player.rookieRevived=true;player.hp=player.maxHp;player.invuln=2.2;
@@ -729,7 +735,7 @@ function athenaPallasThrust(primary){
  // 與守護光球旋轉半徑一致
 function aAthenaHero(){return !!(selectedHero&&selectedHero.id==='athenaSSR');}
 
-const B3_ELEMENT_INFO={lightning:'🌩️ 索爾之牙：連鎖傷害 100%；雷系專武末日風暴。',fire:'🔥 鳳凰之息：Lv.3 額外復活一次；Lv.5 燃燒擊殺留下半徑 10 火場，持續 3 秒，每 0.5 秒造成 100% 攻擊力傷害。',ice:'❄️ 斯卡蒂之擊：Lv.5 解凍造成攻擊力 ×2 傷害。'};
+const B3_ELEMENT_INFO={lightning:'🌩️ 索爾之牙：連鎖傷害 100%；雷系專武末日風暴。',fire:'🔥 鳳凰之息：每隻敵人燃燒最多 10×等級 層；Lv.5 燃燒擊殺留下半徑 10 火場，持續 3 秒，每 0.5 秒造成 100% 攻擊力傷害。',ice:'❄️ 斯卡蒂之擊：Lv.5 解凍冰爆，攻擊力 ×5 起，冰凍中每中一支冰箭 +0.2 倍，最高 ×15。'};
 function b3SyncOrbElement(){if(!player)return;const lv=Math.min(5,player.orbLevel||0);const route=player.elementRoute;const eleLv=route?Math.max(1,skillLevel(route)):0;player.orbs=lv?Math.min(6,lv+1):0;player.orbFireLevel=lv&&route==='fire'?eleLv:0;player.orbIceLevel=lv&&route==='ice'?eleLv:0;player.orbLightningLevel=lv&&route==='lightning'?eleLv:0;}
 function normalSkillCapForHero(id){
  const bonus=(selectedHero&&selectedHero.id==='dragon'&&id==='multi')||(selectedHero&&selectedHero.id==='yggdrasilUR'&&id==='rapidShot');
@@ -789,7 +795,6 @@ function drawSkillChoices(isChest=false){
    }
    if(firstRoute){player.elementRoute=sk.id;player.b3FirstChoiceDone=true;}
    applySkillSafe(sk);player.skills.push(sk.id);
-   if(sk.id==='fire'&&skillLevel('fire')===3)player.reviveCharges=Math.min(10,(player.reviveCharges||0)+1);
    b3SyncOrbElement();
    const made=autoFuseReadyWeapons();updateHud();
    $('skillRefreshRow').classList.add('hidden');
@@ -945,8 +950,9 @@ function updateUltimateButton(){
 let lastUltimateTap=0;
 function showDamageNumber(x,y,value,isCrit=false){
  if(!Array.isArray(damageTexts))damageTexts=[];
+ if(fxLow&&!isCrit&&damageTexts.length>25)return;
  damageTexts.push({x,y:Number(y)-8,text:Math.max(1,Math.round(value)).toLocaleString('en-US'),crit:!!isCrit,life:isCrit?1.15:0.85,maxLife:isCrit?1.15:0.85,vy:isCrit?-64:-38});
- if(damageTexts.length>100)damageTexts.splice(0,damageTexts.length-100);
+ if(damageTexts.length>50)damageTexts.splice(0,damageTexts.length-50);
 }
 function showPlayerDamageNumber(amount){
  if(!player||amount<=0)return;
@@ -1098,13 +1104,15 @@ function rewardMegaEliteSkill(e){
  const pool=availableNormalSkills();
  if(!pool.length){toast('所有技能均已達上限，沒有可用的大精英技能獎勵');return}
  const s=pool[Math.floor(Math.random()*pool.length)];
- applySkillSafe(s);player.skills.push(s.id);if(s.id==='fire'&&skillLevel('fire')===3)player.reviveCharges=Math.min(10,(player.reviveCharges||0)+1);b3SyncOrbElement();updateHud();toast('🏆 大精英擊破！獲得技能：'+s.name+' Lv.'+skillLevel(s.id));
+ applySkillSafe(s);player.skills.push(s.id);b3SyncOrbElement();updateHud();toast('🏆 大精英擊破！獲得技能：'+s.name+' Lv.'+skillLevel(s.id));
 }
 function countEliteKill(e){
  if(!e || e.type!=='brute' || e.eliteKillCounted)return false;
  e.eliteKillCounted=true;
  player.bigKills=(player.bigKills||0)+1;
- if(player.bigKills%10===0)spawnBonusChest(e.x,e.y);
+ // V1.4.29：精英寶箱門檻遞增 10、25、45、70、100…
+ if(player.nextEliteChestAt==null){player.nextEliteChestAt=10;player.eliteChestN=0;}
+ if(player.bigKills>=player.nextEliteChestAt){player.eliteChestN++;player.nextEliteChestAt+=10+5*player.eliteChestN;spawnBonusChest(e.x,e.y);}
  return true;
 }
 // V62-6: every attack type uses this single, idempotent death reward handler.
@@ -1120,7 +1128,7 @@ function awardEnemyDeath(e){
  addGem(e.x,e.y,xp);
  burst(e.x,e.y,(e.type==='boss'||e.type==='megaBoss')?'#f0abfc':e.type==='mega'?'#f472b6':'#ffd166',(e.type==='boss'||e.type==='megaBoss'||e.type==='mega')?20:8);
  if(e.type==='finalBoss'){endRun(true);return true;}
- if(e.type==='boss'||e.type==='megaBoss')spawnBossChest(e.x,e.y);
+ if(e.type==='megaBoss'||(e.type==='boss'&&bossEventChestOK(e)))spawnBossChest(e.x,e.y);
  if(e.type==='mega')rewardMegaEliteSkill(e);
  return true;
 }
@@ -1135,7 +1143,7 @@ function rewardDefeatedEnemies(){
 
 $('ultBtn').addEventListener('click',function(e){e.preventDefault();e.stopPropagation();castUltimate()});
 $('ultBtn').addEventListener('pointerup',function(e){if(e.pointerType==='touch'){e.preventDefault();e.stopPropagation();castUltimate()}},{passive:false});
-function updateHud(){if(!player)return;clearChestsIfAllNormalSkillsAcquired();updateUltimateButton();$('levelText').textContent='Lv.'+player.level;$('hpFill').style.width=Math.max(0,player.hp/player.maxHp*100)+'%';$('hpText').textContent=Math.ceil(player.hp)+' / '+player.maxHp+' HP';$('reviveCountText').textContent='💖 死者甦醒 ×'+Math.max(0,player.reviveCharges||0);{const rr=currentRegenPerSec(),rt=$('regenRateText');if(rt){if(rr>0.05){rt.textContent='+'+rr.toFixed(1)+'/s'+(selectedHero.id==='guardian'&&player.hp>=player.maxHp?' 🌿'+Math.floor(player.satyrForce||0)+'/'+SATYR_FORCE_MAX:'');rt.style.display='';}else{rt.textContent='';rt.style.display='none';}}}$('xpFill').style.width=Math.min(100,player.xp/player.nextXp*100)+'%';$('timeText').textContent=fmtTime(elapsed);$('expMeta').textContent='經驗 ×'+experienceMultiplier().toFixed(2);$('timeMeta').textContent='事件 '+Math.max(0,Math.ceil(specialEventClock-elapsed))+'秒 · 通關 '+fmtTime(Math.max(0,900-elapsed));$('xpPctText').textContent=Math.floor(Math.min(100,player.xp/player.nextXp*100))+'%';$('coinText').textContent=coinTenth(coins+runCoins).toFixed(1);$('killText').textContent='擊倒 '+(player.kills||0);$('bigKillText').textContent='精英怪 '+(player.bigKills||0);$('attackText').textContent=String(Math.round(player.atk));$('speedText').textContent=player.rate.toFixed(1);$('armorText').textContent=String(player.armor);$('moveSpeedText').textContent=String(Math.round(player.spd));renderCompactBattleSkills()}
+function updateHud(){if(!player)return;clearChestsIfAllNormalSkillsAcquired();updateUltimateButton();$('levelText').textContent='Lv.'+player.level;$('hpFill').style.width=Math.max(0,player.hp/player.maxHp*100)+'%';$('hpText').textContent=Math.ceil(player.hp)+'/'+player.maxHp;$('reviveCountText').textContent='💖×'+Math.max(0,player.reviveCharges||0);$('reviveCountText').title='死者甦醒次數';{const rr=currentRegenPerSec(),rt=$('regenRateText');if(rt){if(rr>0.05){rt.textContent='+'+rr.toFixed(1)+'/s'+(selectedHero.id==='guardian'&&player.hp>=player.maxHp?'🌿'+Math.floor(player.satyrForce||0)+'/'+SATYR_FORCE_MAX:'');rt.style.display='';}else{rt.textContent='';rt.style.display='none';}}}$('xpFill').style.width=Math.min(100,player.xp/player.nextXp*100)+'%';$('timeText').textContent=fmtTime(elapsed);$('expMeta').textContent='經驗 ×'+experienceMultiplier().toFixed(2);$('timeMeta').textContent='事件 '+Math.max(0,Math.ceil(specialEventClock-elapsed))+'秒 · 通關 '+fmtTime(Math.max(0,900-elapsed));$('xpPctText').textContent=Math.floor(Math.min(100,player.xp/player.nextXp*100))+'%';$('coinText').textContent=coinTenth(coins+runCoins).toFixed(1);$('killText').textContent='擊倒 '+(player.kills||0);$('bigKillText').textContent='精英怪 '+(player.bigKills||0);$('attackText').textContent=String(Math.round(player.atk));$('speedText').textContent=player.rate.toFixed(1);$('armorText').textContent=String(player.armor);$('moveSpeedText').textContent=String(Math.round(player.spd));renderCompactBattleSkills()}
 function renderCompactBattleSkills(){
  const target=$('skillText');if(!target||!player)return;
  const ids=Array.from(new Set(player.skills||[])).filter(id=>id!=='revive');
@@ -1231,7 +1239,19 @@ function configureStageWorldV714(){
  else{world.w=857;world.h=1536;walkZone=originalWalkZoneV714;}
 }
 
-function insideWalkZone(px,py){let inside=false;for(let i=0,j=walkZone.length-1;i<walkZone.length;j=i++){const xi=walkZone[i][0],yi=walkZone[i][1],xj=walkZone[j][0],yj=walkZone[j][1];const hit=((yi>py)!==(yj>py))&&(px<(xj-xi)*(py-yi)/(yj-yi)+xi);if(hit)inside=!inside;}return inside;}
+function insideWalkZone(px,py){return insideWalkZoneBase(px,py)&&!inFenrirCrack(px,py,8);}
+// V1.4.29 芬里爾裂縫：背景圖上 3 道熔岩裂縫＋芬里爾第二、三階段撕開的新裂縫（世界座標膠囊形）
+const FENRIR_STATIC_CRACKS=[[220,601,316,616,18],[191,1090,300,1019,20],[503,1055,587,1083,18]];
+let fenrirCracks=[];
+function crackNearest(px,py,c){const dx=c.x2-c.x1,dy=c.y2-c.y1,l=dx*dx+dy*dy||1;let t=((px-c.x1)*dx+(py-c.y1)*dy)/l;t=Math.max(0,Math.min(1,t));return {x:c.x1+dx*t,y:c.y1+dy*t}}
+function crackDist(px,py,c){const n=crackNearest(px,py,c);return Math.hypot(px-n.x,py-n.y)}
+function inFenrirCrack(px,py,pad=0){if(!fenrirCracks.length||!finalBossSpawned||jotunStage===2)return false;for(const c of fenrirCracks){if(c.warn>0)continue;if(crackDist(px,py,c)<c.r+pad)return true;}return false}
+function pushPlayerOutOfCrack(c){if(!player)return;const d=crackDist(player.x,player.y,c),need=c.r+(player.r||12)+3;if(d>=need)return;const n=crackNearest(player.x,player.y,c);let ux=player.x-n.x,uy=player.y-n.y,l=Math.hypot(ux,uy);if(l<.01){ux=-(c.y2-c.y1);uy=c.x2-c.x1;l=Math.hypot(ux,uy)||1;}player.x=n.x+ux/l*need;player.y=n.y+uy/l*need;}
+function resetFenrirCracks(){fenrirCracks=jotunStage===2?[]:FENRIR_STATIC_CRACKS.map(a=>({x1:a[0],y1:a[1],x2:a[2],y2:a[3],r:a[4],warn:0,dyn:false}));fenrirCracks.forEach(pushPlayerOutOfCrack);}
+function spawnFenrirCracks(n){if(jotunStage===2||!player)return;for(let k=0;k<n;k++){for(let tries=0;tries<30;tries++){const a=Math.random()*Math.PI*2,dist=110+Math.random()*90,cx=player.x+Math.cos(a)*dist,cy=player.y+Math.sin(a)*dist,ang=Math.random()*Math.PI,len=60+Math.random()*30;const c={x1:cx-Math.cos(ang)*len,y1:cy-Math.sin(ang)*len,x2:cx+Math.cos(ang)*len,y2:cy+Math.sin(ang)*len,r:18,warn:1.5,dyn:true,seed:Math.random()*100};if(!insideWalkZoneBase(c.x1,c.y1)||!insideWalkZoneBase(c.x2,c.y2)||!insideWalkZoneBase(cx,cy))continue;if(crackDist(player.x,player.y,c)<c.r+50)continue;if(fenrirCracks.some(o=>crackDist(cx,cy,o)<o.r+c.r+70))continue;fenrirCracks.push(c);break;}}toast('🌋 芬里爾撕裂大地！注意紅色裂痕！');}
+function updateFenrirCracks(dt){for(const c of fenrirCracks){if(c.warn>0){c.warn=Math.max(0,c.warn-dt);if(c.warn===0)pushPlayerOutOfCrack(c);}}}
+function drawFenrirCracks(){for(const c of fenrirCracks){if(!c.dyn)continue;const ang=Math.atan2(c.y2-c.y1,c.x2-c.x1),len=Math.hypot(c.x2-c.x1,c.y2-c.y1);ctx.save();ctx.translate(c.x1,c.y1);ctx.rotate(ang);if(c.warn>0){ctx.globalAlpha=.45+.45*Math.abs(Math.sin(c.warn*10));ctx.strokeStyle='#ff3b3b';ctx.lineWidth=4;ctx.setLineDash([10,7]);ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(len,0);ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=.18;ctx.fillStyle='#ff3b3b';ctx.beginPath();ctx.ellipse(len/2,0,len/2+c.r,c.r,0,0,Math.PI*2);ctx.fill();}else{const seg=10;ctx.beginPath();for(let i=0;i<=seg;i++){const x=len*i/seg,w=c.r*(i===0||i===seg?.25:.75+.35*Math.sin(c.seed+i*1.7));ctx.lineTo(x,-w);}for(let i=seg;i>=0;i--){const x=len*i/seg,w=c.r*(i===0||i===seg?.25:.75+.35*Math.cos(c.seed+i*2.3));ctx.lineTo(x,w);}ctx.closePath();ctx.fillStyle='#1a0703';ctx.fill();ctx.shadowColor='#ff7a1a';ctx.shadowBlur=16;ctx.strokeStyle='#ff8a2b';ctx.lineWidth=3;ctx.stroke();ctx.shadowBlur=0;ctx.strokeStyle='rgba(255,200,90,.85)';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(len*.12,0);for(let i=1;i<seg;i++)ctx.lineTo(len*i/seg,Math.sin(c.seed+i)*c.r*.25);ctx.lineTo(len*.88,0);ctx.stroke();}ctx.restore();}}
+function insideWalkZoneBase(px,py){let inside=false;for(let i=0,j=walkZone.length-1;i<walkZone.length;j=i++){const xi=walkZone[i][0],yi=walkZone[i][1],xj=walkZone[j][0],yj=walkZone[j][1];const hit=((yi>py)!==(yj>py))&&(px<(xj-xi)*(py-yi)/(yj-yi)+xi);if(hit)inside=!inside;}return inside;}
 // V61-1: project out-of-bounds experience to a reachable point just inside the air wall.
 function nearestReachableGemPoint(x,y){
  if(insideWalkZone(x,y))return {x,y};
@@ -1259,8 +1279,10 @@ function allNormalSkillsAcquired(){
  if(!player||!Array.isArray(player.skills)||!player.elementRoute)return false;
  return availableNormalSkills().length===0;
 }
+// V1.4.29：同一次 Boss 事件只掉一個寶箱
+function bossEventChestOK(e){if(e.bossEvent==null)return true;player.bossChestEvents=player.bossChestEvents||{};if(player.bossChestEvents[e.bossEvent])return false;player.bossChestEvents[e.bossEvent]=1;return true}
 function spawnBossChest(x,y){if(allNormalSkillsAcquired()||chests.length>=3)return;const pt=nearestReachableGemPoint(x,y);chests.push({x:pt.x,y:pt.y,r:15,life:30});burst(pt.x,pt.y,'#f0abfc',18);toast('🎁 BOSS 專屬寶箱掉落！')}
-function spawnBonusChest(x,y){if(allNormalSkillsAcquired()||chests.length>=3)return;const pt=nearestReachableGemPoint(x,y);chests.push({x:pt.x,y:pt.y,r:15,life:30,bonus:true});burst(pt.x,pt.y,'#fbbf24',22);toast('🎁 精英怪累計擊殺 10 隻！額外寶箱掉落！')}
+function spawnBonusChest(x,y){if(allNormalSkillsAcquired()||chests.length>=3)return;const pt=nearestReachableGemPoint(x,y);chests.push({x:pt.x,y:pt.y,r:15,life:30,bonus:true});burst(pt.x,pt.y,'#fbbf24',22);toast('🎁 精英獎勵寶箱掉落！下一個：精英累計 '+(player.nextEliteChestAt||0)+' 隻')}
 function openBossChest(chest){
  if(allNormalSkillsAcquired())return false;
  const gold=10;addRunReward(gold);
@@ -1272,7 +1294,17 @@ function openBossChest(chest){
  return true;
 }
 
-function burst(x,y,color,n=7){for(let i=0;i<n;i++){let a=Math.random()*Math.PI*2,s=20+Math.random()*100;particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:.25+Math.random()*.4,color})}}
+// V1.4.29 畫面特效等級（高／低／自動）與數量上限
+let fxMode='auto';try{fxMode=localStorage.getItem('realmFxMode')||'auto'}catch(_e){}
+let fxLow=fxMode==='low';
+(function(){try{const d=Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype,'shadowBlur');if(!d||!ctx)return;Object.defineProperty(ctx,'shadowBlur',{configurable:true,get(){return d.get.call(this)},set(v){d.set.call(this,fxLow?0:v)}});}catch(_e){}})();
+const fxStat={frames:0,t0:0,lowSec:0,highSec:0};
+function fxTick(now){if(fxMode!=='auto'){fxLow=fxMode==='low';return;}fxStat.frames++;if(!fxStat.t0)fxStat.t0=now;const span=now-fxStat.t0;if(span<1000)return;const fps=fxStat.frames*1000/span;fxStat.frames=0;fxStat.t0=now;if(!fxLow){if(fps<45){if(++fxStat.lowSec>=2){fxLow=true;fxStat.highSec=0;fxRefreshBtn();}}else fxStat.lowSec=0;}else{if(fps>=55){if(++fxStat.highSec>=30){fxLow=false;fxStat.lowSec=0;fxRefreshBtn();}}else fxStat.highSec=0;}}
+function fxEnforceCaps(){if(particles.length>250)particles.splice(0,particles.length-250);if(bullets.length>400)bullets.splice(0,bullets.length-400);if(gems.length>60){const n=gems.length-60;let extra=0;for(let i=0;i<n;i++)extra+=gems[i].val||0;gems.splice(0,n);gems[0].val=(gems[0].val||0)+extra;}}
+function fxRefreshBtn(){const b=document.getElementById('fxModeBtn');if(b)b.textContent=fxModeLabel();}
+function fxModeLabel(){return '✨ 特效：'+({auto:'自動',high:'高',low:'低'}[fxMode]||'自動')+(fxMode==='auto'?(fxLow?'（目前低）':'（目前高）'):'')}
+setTimeout(()=>{const b=document.getElementById('fxModeBtn');if(!b)return;b.textContent=fxModeLabel();b.onclick=()=>{fxMode=fxMode==='auto'?'high':fxMode==='high'?'low':'auto';fxLow=fxMode==='low';fxStat.lowSec=fxStat.highSec=0;try{localStorage.setItem('realmFxMode',fxMode)}catch(_e){}b.textContent=fxModeLabel();};},0);
+function burst(x,y,color,n=7){if(fxLow)n=Math.ceil(n/2);for(let i=0;i<n;i++){let a=Math.random()*Math.PI*2,s=20+Math.random()*100;particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:.25+Math.random()*.4,color})}}
 // V66 正式版：鳳凰之息 Lv.5 燃燒擊殺火場（世界座標半徑 10，0.5 秒一次，持續 3 秒）。
 let phoenixFireFields=[];
 function spawnPhoenixFireField(e){
@@ -1510,7 +1542,7 @@ function spawnFinalBoss(){
  const x=Math.max(35,Math.min(world.w-35,player.x+Math.cos(a)*dist));
  const y=Math.max(35,Math.min(world.h-35,player.y+Math.sin(a)*dist));
  enemies.push(kidModeEnemy({id:enemyId++,x,y,r:46,hp:750000,maxHp:750000,spd:68,dmg:500,type:'finalBoss',name:'滅世魔狼·芬里爾',hit:0,attackClock:0,fenrirPhase:1,fenrirClock:0,fenrirDashCD:6,fenrirRoarCD:10,fenrirMeteorCD:12,fenrirDash:null,fenrirRoar:null,fenrirMeteors:[],fenrirEnraged:false}));
- showFenrirEntrance();toast('⚠️ 諸神黃昏！滅世魔狼·芬里爾降臨！');
+ resetFenrirCracks();showFenrirEntrance();toast('⚠️ 諸神黃昏！滅世魔狼·芬里爾降臨！');
 }
 // C monster module: Fenrir encounter logic. Visual presentation is delegated to D.
 function fenrirDealDamage(amount,x,y,r){
@@ -1525,8 +1557,8 @@ function updateFenrir(e,dt){
  const phase=ratio<=.30?3:ratio<=.75?2:1;
  if(phase!==e.fenrirPhase){
   e.fenrirPhase=phase;
-  if(phase===2)toast('⚠️ 芬里爾第二階段：諸神黃昏！');
-  if(phase===3){e.fenrirEnraged=true;toast('🔥 芬里爾掙脫命運鎖鏈！狂暴階段！')}
+  if(phase===2){toast('⚠️ 芬里爾第二階段：諸神黃昏！');spawnFenrirCracks(1);}
+  if(phase===3){e.fenrirEnraged=true;toast('🔥 芬里爾掙脫命運鎖鏈！狂暴階段！');spawnFenrirCracks(2);}
  }
  const haste=e.fenrirEnraged?.75:1;
  e.fenrirClock+=dt;
@@ -1597,7 +1629,8 @@ function triggerSpecialEvent(){
    const a=Math.random()*Math.PI*2,dist=Math.max(W,H)*(.65+Math.random()*.22),fixedHp=bossBaseHPAt(elapsed),hp=fixedHp??(Math.max(900,player.atk*45)*(1+elapsed/150));
    const x=Math.max(35,Math.min(world.w-35,player.x+Math.cos(a)*dist)),y=Math.max(35,Math.min(world.h-35,player.y+Math.sin(a)*dist));
    const bossE=cApplyMonsterBalance({id:enemyId++,x,y,r:34,hp,maxHp:hp,spd:38+Math.min(30,elapsed/35),dmg:26+Math.floor(elapsed/40),type:'boss',hit:0});
-   if(fixedHp!=null){bossE.hp=fixedHp;bossE.maxHp=fixedHp;} // V1.4.25：7 分後的 Boss 血量不再乘時間倍率（攻擊倍率保留）
+   if(fixedHp!=null){bossE.hp=fixedHp;bossE.maxHp=fixedHp;}
+   bossE.bossEvent=specialEventIndex; // V1.4.25：7 分後的 Boss 血量不再乘時間倍率（攻擊倍率保留）
    enemies.push(kidModeEnemy(bossE));
   }
   toast('⚠️ BOSS 出現！本階段 '+bossCount+' 隻！注意走位！');
@@ -1629,7 +1662,7 @@ function drawSkadiFrostRainVfx(){
   if(progress>.70){ctx.save();ctx.globalAlpha=(progress-.70)/.30*.65;ctx.strokeStyle='#9fefff';ctx.lineWidth=1.5;ctx.shadowColor='#6fdcff';ctx.shadowBlur=12;ctx.beginPath();ctx.ellipse(f.x,f.y,7+progress*7,3+progress*4,0,0,Math.PI*2);ctx.stroke();ctx.restore();}
  }
 }
-function update(dt,clockDt=dt){jotunTick(dt);updatePhoenixFireFields(dt);for(let i=skadiFrostRainVfx.length-1;i>=0;i--){skadiFrostRainVfx[i].life-=dt;if(skadiFrostRainVfx[i].life<=0)skadiFrostRainVfx.splice(i,1);}if(elapsed+clockDt>=(jotunStage===2?1200:900)){elapsed=jotunStage===2?1200:900;updateHud();endRun(false);return;}elapsed+=clockDt;if(elapsed>=(jotunStage===2?1080:780)&&!finalBossSpawned)spawnFinalBoss();if(jotunFreezeCheck(dt)){updateHud();return;}while(rapidShotQueue.length&&rapidShotQueue[0].at<=elapsed){const shot=rapidShotQueue.shift();shot.fire()}spawnClock+=dt;attackClock-=dt;
+function update(dt,clockDt=dt){jotunTick(dt);updateFenrirCracks(dt);updatePhoenixFireFields(dt);for(let i=skadiFrostRainVfx.length-1;i>=0;i--){skadiFrostRainVfx[i].life-=dt;if(skadiFrostRainVfx[i].life<=0)skadiFrostRainVfx.splice(i,1);}if(elapsed+clockDt>=(jotunStage===2?1200:900)){elapsed=jotunStage===2?1200:900;updateHud();endRun(false);return;}elapsed+=clockDt;if(elapsed>=(jotunStage===2?1080:780)&&!finalBossSpawned)spawnFinalBoss();if(jotunFreezeCheck(dt)){updateHud();return;}while(rapidShotQueue.length&&rapidShotQueue[0].at<=elapsed){const shot=rapidShotQueue.shift();shot.fire()}spawnClock+=dt;attackClock-=dt;
 if(aAthenaHero()&&player.athenaUltTimer>0){
  const active=Math.min(dt,player.athenaUltTimer);player.athenaUltTimer=Math.max(0,player.athenaUltTimer-dt);
  player.athenaUltHealClock+=active;
@@ -1788,14 +1821,16 @@ for(const e of enemies){
  let d=cMoveDt?Math.sqrt(dSq)||1:1;
  const b3WasFrozen=(e.frozenTimer||0)>0;
  e.frozenTimer=Math.max(0,(e.frozenTimer||0)-dt);
- if(b3WasFrozen&&e.frozenTimer<=0&&skillLevel('ice')>=5&&e.hp>0){const thawDamage=player.atk*2;dealEnemyDamage(e,thawDamage);showDamageNumber(e.x,e.y-e.r-9,thawDamage);if(e.hp<=0)awardEnemyDeath(e)}
+ if(b3WasFrozen&&e.frozenTimer<=0){e.freezeReadyAt=elapsed+5; // V1.4.29：解凍後 5 秒內不再冰凍
+  if(skillLevel('ice')>=5&&e.hp>0){const thawDamage=player.atk*Math.min(15,e.iceShatterMult||5);dealEnemyDamage(e,thawDamage);showDamageNumber(e.x,e.y-e.r-9,thawDamage,true);burst(e.x,e.y,'#cdf4ff',16);if(e.hp<=0)awardEnemyDeath(e)}
+  e.iceShatterMult=0;}
  e.iceSlowTimer=Math.max(0,(e.iceSlowTimer||0)-dt);
  const iceFactor=e.frozenTimer>0?0:1-(e.iceSlowTimer>0?(e.iceSlow||.3):0);
  if(e.jotunKind){const dashWasActive=(e.jotunDashTime||0)>0;jotunUpdateEnemy(e,dt);
  if(cMoveDt&&!dashWasActive&&!(e.jotunDashTime>0)){const charge=e.jotunKind==='ice_berserker'&&e.jotunWarn?.shape==='line'?0.25:1;
- e.x+=dx/d*e.spd*iceFactor*cMoveDt*charge;e.y+=dy/d*e.spd*iceFactor*cMoveDt*charge;}}else if(e.type==='finalBoss'){updateFenrir(e,dt)}else if(cMoveDt){e.x+=dx/d*e.spd*iceFactor*cMoveDt;e.y+=dy/d*e.spd*iceFactor*cMoveDt;}d=Math.hypot(player.x-e.x,player.y-e.y);if(e.hit>0)e.hit-=dt;
+ e.x+=dx/d*e.spd*iceFactor*cMoveDt*charge;e.y+=dy/d*e.spd*iceFactor*cMoveDt*charge;}}else if(e.type==='finalBoss'){if(e.frozenTimer>0){const ox=e.x,oy=e.y;updateFenrir(e,dt*.3);e.x=ox;e.y=oy;}else updateFenrir(e,dt)}else if(cMoveDt){e.x+=dx/d*e.spd*iceFactor*cMoveDt;e.y+=dy/d*e.spd*iceFactor*cMoveDt;}d=Math.hypot(player.x-e.x,player.y-e.y);if(e.hit>0)e.hit-=dt;
  // Large monsters launch aimed projectiles; bosses fire a dramatic three-shot arc.
- e.attackClock=(e.attackClock||0)-dt;
+ e.attackClock=(e.attackClock||0)-dt*((e.frozenTimer>0&&(e.type==='boss'||e.type==='megaBoss'))?.3:1); // V1.4.29：Boss 冰凍中攻擊頻率 −70%
  if(!e.jotunKind&&(e.type==='brute'||e.type==='boss'||e.type==='mega')&&e.attackClock<=0&&d<520){
   const base=Math.atan2(player.y-e.y,player.x-e.x);
   if(e.type==='boss'){
@@ -1816,6 +1851,7 @@ for(const e of enemies){
   if(e.burnFlash>0)e.burnFlash-=dt;
   while(e.burnClock>=.5&&e.hp>0){
    e.burnClock-=.5;
+   if(elapsed-(e.burnLastHit||0)>3){e.burnStacks=Math.floor(e.burnStacks/2);if(e.burnStacks<=0){e.burnStacks=0;break;}}
    const burnDamage=e.burnStacks*(selectedHero.id==='flame'?(1+(player.burnPower||0)):1);
    const hpBeforeBurn=e.hp;
    dealEnemyTrueDamage(e,burnDamage);e.hit=.08;
@@ -1847,9 +1883,10 @@ for(let i=hostileShots.length-1;i>=0;i--){
 for(let i=bullets.length-1;i>=0;i--){const b=bullets[i];b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;let remove=b.life<=0;for(const e of enemies){if(b.hit.includes(e.id))continue;if(Math.hypot(e.x-b.x,e.y-b.y)<cMonsterHitRadius(e)+b.r){const dealt=b.damage*(selectedHero.id==='skadiN'&&((e.iceSlowTimer||0)>0||(e.frozenTimer||0)>0||(e.skadiChill||0)>0)?1.3:1);dealEnemyDamage(e,dealt);if(selectedHero.id==='skadiN'&&!b.ice){e.skadiChill=Math.max(e.skadiChill||0,SKADI_CHILL_DUR);if(!['boss','megaBoss','finalBoss'].includes(e.type)){e.iceSlow=Math.max(e.iceSlow||0,SKADI_BASE_SLOW);e.iceSlowTimer=Math.max(e.iceSlowTimer||0,SKADI_CHILL_DUR);}}e.hit=.1;showDamageNumber(e.x+(Math.random()-.5)*14,e.y-e.r-(Math.random()*8),dealt,b.crit);b.hit.push(e.id);burst(b.x,b.y,b.crit?'#ffe082':b.ice?'#60dfff':b.lightning?'#facc15':'#e5f3ff',3);
 if(b.ice){
  const lv=Math.max(1,b.iceLevel||player.iceLevel||1);
+ if(e.frozenTimer>0)e.iceShatterMult=Math.min(15,(e.iceShatterMult||5)+.2);
  e.iceSlow=Math.min(.7,.3+.1*(lv-1));e.iceSlowTimer=Math.max(e.iceSlowTimer||0,2.5);
  e.iceHitCount=(e.iceHitCount||0)+1;
- if(e.iceHitCount>=5){e.iceHitCount=0;e.frozenTimer=Math.max(e.frozenTimer||0,Math.min(2.8,2+.2*(lv-1)));e.hit=.18;burst(e.x,e.y,'#8be9ff',10);showDamageNumber(e.x,e.y-e.r-14,0,false);toast('❄️ 冰凍！');}
+ if(e.iceHitCount>=5&&!(e.frozenTimer>0)&&elapsed>=(e.freezeReadyAt||0)){e.iceHitCount=0;e.frozenTimer=freezeDurFor(e,Math.min(2.8,2+.2*(lv-1)));e.iceShatterMult=5;e.hit=.18;burst(e.x,e.y,'#8be9ff',10);showDamageNumber(e.x,e.y-e.r-14,0,false);toast('❄️ 冰凍！');}
 }
 if(b.lightning){
  e.lightningAuraUntil=Math.max(e.lightningAuraUntil||0,elapsed+.42);
@@ -1890,7 +1927,7 @@ if(b.lightning){
 {const burnAdd=b.fire?Math.max(1,Math.round(b.fire/5)):(selectedHero.id==='flame'?MANNIS_BASE_BURN:0);
 if(burnAdd>0){
  // Each burn stack deals 1 damage every 0.5s.
- e.burnStacks=(e.burnStacks||0)+burnAdd;
+ addBurnStacks(e,burnAdd);
  e.burnClock=e.burnClock||0;
  e.burnFlash=.25;
  burst(e.x,e.y,'#ff7138',3);
@@ -1918,8 +1955,8 @@ if(player.orbs){
   showDamageNumber(e.x,e.y-e.r,orbDamage,false);
   burst(e.x,e.y,'#c4b5fd',1);
   // Orb elemental upgrades apply their own status effects without replacing arrow effects.
-  if((player.orbFireLevel||0)>0&&Math.random()<dt*2){e.burnStacks=(e.burnStacks||0)+player.orbFireLevel;e.burnClock=e.burnClock||0;e.burnFlash=.2;}
-  if((player.orbIceLevel||0)>0){const il=player.orbIceLevel;e.iceSlow=Math.max(e.iceSlow||0,Math.min(.7,.3+.1*(il-1)));e.iceSlowTimer=Math.max(e.iceSlowTimer||0,.65);if(il>=3&&Math.random()<dt*.5)e.frozenTimer=Math.max(e.frozenTimer||0,Math.min(2.8,2+.2*(il-1)));}
+  if((player.orbFireLevel||0)>0&&Math.random()<dt*2){addBurnStacks(e,player.orbFireLevel);e.burnClock=e.burnClock||0;e.burnFlash=.2;}
+  if((player.orbIceLevel||0)>0){const il=player.orbIceLevel;e.iceSlow=Math.max(e.iceSlow||0,Math.min(.7,.3+.1*(il-1)));e.iceSlowTimer=Math.max(e.iceSlowTimer||0,.65);if(il>=3&&Math.random()<dt*.5&&!(e.frozenTimer>0)&&elapsed>=(e.freezeReadyAt||0)){e.frozenTimer=freezeDurFor(e,Math.min(2.8,2+.2*(il-1)));e.iceShatterMult=5;}}
   if((player.orbLightningLevel||0)>0&&Math.random()<dt*(1+player.orbLightningLevel*.6)){const targets=enemies.filter(t=>t.id!==e.id&&Math.hypot(t.x-e.x,t.y-e.y)<=243).sort((a,b)=>Math.hypot(a.x-e.x,a.y-e.y)-Math.hypot(b.x-e.x,b.y-e.y)).slice(0,Math.min(2+player.orbLightningLevel,6));for(const t of targets){t.hp-=player.atk*.5;t.hit=.08;showDamageNumber(t.x,t.y-t.r,player.atk*.5,false);particles.push({x:e.x,y:e.y,vx:0,vy:0,life:.14,color:'#fde047',lineTo:{x:t.x,y:t.y}});}}
   if(e.hp<=0)awardEnemyDeath(e);
  }
@@ -2807,6 +2844,7 @@ function drawAthenaBattle(){
 function draw(){ctx.clearRect(0,0,W,H);const camX=Math.max(0,Math.min(world.w-W,player.x-W/2)),camY=Math.max(0,Math.min(world.h-H,player.y-H/2));ctx.save();
 const shake=player.dragonUltShake||0;ctx.translate((Math.random()-.5)*shake*24,(Math.random()-.5)*shake*24);ctx.translate(-camX,-camY);
 ctx.fillStyle='#173332';ctx.fillRect(camX,camY,W,H);const activeBattleBackdrop=jotunStage===2?jotunMapV714:(finalBossSpawned&&fenrirArenaBackdrop.complete&&fenrirArenaBackdrop.naturalWidth?fenrirArenaBackdrop:uiTestBackdrop);if(activeBattleBackdrop.complete&&activeBattleBackdrop.naturalWidth){/* V2.3：背景固定在世界座標並按比例覆蓋整張地圖，鏡頭移動時場景會自然捲動。 */const bgScale=Math.min(world.w/activeBattleBackdrop.naturalWidth,world.h/activeBattleBackdrop.naturalHeight);const bgW=activeBattleBackdrop.naturalWidth*bgScale,bgH=activeBattleBackdrop.naturalHeight*bgScale;ctx.fillStyle='#173332';ctx.fillRect(camX,camY,W,H);ctx.globalAlpha=jotunStage===2?1:.90;ctx.drawImage(activeBattleBackdrop,(world.w-bgW)/2,(world.h-bgH)/2,bgW,bgH);ctx.globalAlpha=1;if(jotunStage!==2){ctx.fillStyle='rgba(3,14,15,.24)';ctx.fillRect(camX,camY,W,H);}}jotunDrawGround(camX,camY);drawPhoenixFireFields();/* V2.2 美術調整：移除地圖上固定間距的網格線，保留底色與地形紋理。 */
+if(finalBossSpawned&&fenrirCracks.length)drawFenrirCracks();
 /* V2.3 美術調整：移除地圖裝飾用綠色圓球，避免與經驗寶石及角色混淆。 */
 /* V38 美術整合：世界樹「萬界之森」專屬光影，純視覺不影響戰鬥判定。 */
 if(player.worldTreeUltTimer>0){
@@ -3071,7 +3109,7 @@ if(e.type==='boss'){ctx.fillStyle='#111827';ctx.fillRect(-32,-r-19,64,6);ctx.fil
 ctx.restore();
 }
 ctx.fillStyle='#0008';ctx.fillRect(e.x-e.r,d2HealthBarY,e.r*2,3);ctx.fillStyle=e.type==='boss'?'#f0abfc':'#ff7777';ctx.fillRect(e.x-e.r,d2HealthBarY,e.r*2*Math.max(0,e.hp/e.maxHp),3);
-if(e.frozenTimer>0){ctx.save();ctx.strokeStyle='#7dd3fc';ctx.lineWidth=2;ctx.shadowColor='#38bdf8';ctx.shadowBlur=8;ctx.beginPath();ctx.arc(e.x,e.y,e.r+5,0,Math.PI*2);ctx.stroke();ctx.restore();}
+if(e.frozenTimer>0){ctx.save();ctx.strokeStyle='#7dd3fc';ctx.lineWidth=2;ctx.shadowColor='#38bdf8';ctx.shadowBlur=8;ctx.beginPath();ctx.arc(e.x,e.y,e.r+5,0,Math.PI*2);ctx.stroke();ctx.restore();if(skillLevel('ice')>=5&&e.iceShatterMult){ctx.save();ctx.font='900 12px system-ui';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#0c2a3a';ctx.fillStyle='#cdf4ff';const tx='❄×'+e.iceShatterMult.toFixed(1);ctx.strokeText(tx,e.x,e.y-e.r-14);ctx.fillText(tx,e.x,e.y-e.r-14);ctx.restore();}}
 else if(e.iceSlowTimer>0){ctx.save();ctx.globalAlpha=.75;ctx.strokeStyle='#38bdf8';ctx.lineWidth=2;ctx.beginPath();ctx.arc(e.x,e.y,e.r+3,0,Math.PI*2);ctx.stroke();ctx.restore();}
 if((e.lightningAuraUntil||0)>elapsed&&e.hp>0){
  const remaining=Math.min(1,(e.lightningAuraUntil-elapsed)/.42),rr=Math.max(12,e.r*1.25),t=elapsed*30;
@@ -3178,7 +3216,7 @@ for(const p of particles){ctx.globalAlpha=Math.max(0,p.life*2);ctx.fillStyle=p.c
  else{ctx.save();ctx.shadowColor=p.color;ctx.shadowBlur=8;ctx.beginPath();ctx.arc(p.x,p.y,3.5,0,Math.PI*2);ctx.fill();ctx.restore()}
 }ctx.globalAlpha=1;ctx.restore();
 }
-function loop(now){if(!running||paused)return;const wallDt=Math.max(0,Math.min(.25,(now-last)/1000||0));const dt=Math.min(.04,wallDt);last=now;update(dt,wallDt);if(!running)return;draw();raf=requestAnimationFrame(loop)}
+function loop(now){if(!running||paused)return;const wallDt=Math.max(0,Math.min(.25,(now-last)/1000||0));const dt=Math.min(.04,wallDt);last=now;update(dt,wallDt);if(!running)return;fxEnforceCaps();fxTick(now);draw();raf=requestAnimationFrame(loop)}
 const stick={active:false,x:0,y:0,pointerId:null,touchId:null};const base=$('stickBase'),knob=$('stickKnob');
 function stickMoveXY(clientX,clientY){const r=base.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let dx=clientX-cx,dy=clientY-cy,len=Math.hypot(dx,dy),max=Math.max(22,Math.min(r.width,r.height)*.34);if(len>max){dx=dx/len*max;dy=dy/len*max}stick.x=dx/max;stick.y=dy/max;knob.style.transform=`translate(${dx}px,${dy}px)`;}
 function stickMove(e){stickMoveXY(e.clientX,e.clientY)}
@@ -3662,6 +3700,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 })();
 </script>
 <div id="slotGate" class="open" role="dialog" aria-label="選擇存檔"><div class="sg-wrap"><div class="sg-over">REALM GATE</div><h1>神域之門</h1><div class="sg-sub">請選擇存檔，進入後可自由切換三種玩法</div><div id="slotGateList"></div><div class="sg-hint">三種玩法共用同一份存檔：英雄、金幣與各玩法進度都依存檔欄位分開保存。<br>建議定期在「存檔管理」匯出備份。</div></div></div>
+<style id="v1429layout">#leftHud .hero-hp-line{display:flex!important;align-items:center!important;gap:4px!important;flex-wrap:nowrap!important;white-space:nowrap!important;overflow:hidden!important;font-size:clamp(8px,2.35vw,12px)!important;line-height:1.25!important}#leftHud .hero-hp-line>span{flex:none!important;margin-left:0!important;font-size:inherit!important}#ultBtn{right:12px!important;bottom:calc(66px + env(safe-area-inset-bottom))!important;width:70px!important;height:70px!important}#pauseBtn{right:12px!important;bottom:calc(148px + env(safe-area-inset-bottom))!important}#fenrirTestBtn{top:calc(env(safe-area-inset-top) + 152px)!important;bottom:auto!important;right:12px!important}</style>
 <div id="realmTowerOverlay" aria-hidden="true"><div id="realmTowerTop"><button type="button" id="realmTowerBack">‹ 返回最後防線</button><span>🏰 神域之門：魔物入侵</span></div><iframe id="realmTowerFrame" title="神域之門：魔物入侵" loading="lazy" allow="autoplay"></iframe></div>
 <script id="realmTowerIntegration">
 (function(){
