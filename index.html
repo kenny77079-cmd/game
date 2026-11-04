@@ -1,6 +1,8 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
+<!-- V1.4.71：以 GPT 交付的 V1.4.70 為基底。修復 UR 測試選單：原本選單程式放在遊戲外層，讀不到遊戲內的 player／SUPER_WEAPONS，且 toast 指到同名 DOM 元素，按任何按鈕都直接出錯沒有反應。改由遊戲內提供 window.realmUrTest 介面，選單按鈕同時支援觸控與滑鼠，開啟選單時暫停戰鬥。 -->
+<!-- V1.4.44～V1.4.70：GPT 修改（阿斯克三神賜福、奧丁、海拉、AI 惡龍／世界樹／月神／薩堤爾／雅典娜／鳳凰特效、Boss 音樂移除等），見總設定文件。 -->
 <!-- V1.4.43：KID 模式套用到魔物入侵、諸神試煉、城門之戰（比照最後防線：怪物血量 ×0.5、我方生命 ×2、承傷 ×0.3，四模式共用同一開關）；諸神試煉英雄頭像下方加屬性符文，Combo 數移到魔物旁。 -->
 <!-- V1.4.42：諸神試煉難度回調（敵人攻擊曲線 ×1.2／×1.1、怒氣第 8／12 回合起每層 +10%、四隻 Boss 血量 ×0.7、海拉吸魂改為不足 2 Combo 回 3%）。 -->
 <!-- V1.4.41：魔物入侵畫面配置：底部按鈕區壓成兩排、隱藏重複的標題與關卡列，地圖依螢幕高度縮放，整張地圖（含右下角暫停／加速圓鈕）都能在按鈕區上方完整顯示。 -->
@@ -27,7 +29,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="神域之門">
 <meta name="mobile-web-app-capable" content="yes">
-<title>神域之門 V1.4.43｜KID 模式全玩法版</title>
+<title>神域之門 V1.4.71｜UR 測試選單修復版</title>
 <!-- V46：修正 V41 操作區按鈕間意外輸出的字面 \n 字元；保留 V41 技能聯動及 V40 時間排版。 -->
 <style>
 :root{--bg:#101827;--panel:#182438;--gold:#ffd166;--mint:#74f2ce;--red:#ff6b6b;--text:#f5f7fb;--muted:#aebbd0}
@@ -416,7 +418,7 @@ body:not(.battle-active) #unifiedBattleHud{display:none!important}
    <div id="realmTrialPicker" aria-label="新玩法入口"><div class="realm-mode-caption">新玩法</div><button type="button" id="realmModeTrial">⚡ 諸神試煉</button></div>
    <div class="v709-overline">REALM GATE · THE LAST DEFENSE</div>
    <h1>神域之門</h1>
-   <div class="v709-subtitle">最後防線 <span>V1.4.43</span></div>
+   <div class="v709-subtitle">最後防線 <span>V1.4.71</span></div>
    <button class="btn secondary" id="musicToggleMain" type="button" style="display:none">♫ 音樂開</button><button class="btn secondary" id="sfxToggleMain" type="button">🔊 音效開</button>
   </header>
   <section class="hero-select-wrap v709-showcase" aria-label="出戰英雄">
@@ -1310,6 +1312,21 @@ function handleFenrirPortraitTap(ev){
   if(typeof realmV163SyncTestMenu==='function')realmV163SyncTestMenu();
  }
 }
+// V1.4.71：UR 測試選單介面（選單在遊戲外層，只能透過這裡操作遊戲內資料）
+let realmUrMenuPaused=false;
+window.realmUrTest={
+ active(){return !!(fenrirPrivateEnabled&&running&&screen==='game'&&player)},
+ weapons(){if(!player)return[];return SUPER_WEAPONS.filter(w=>!w.heroOnly||w.heroOnly===selectedHero.id).map(w=>{const own=(player.superWeapons||[]).find(x=>x.id===w.id);return{id:w.id,label:(w.icon||'⚔️')+' '+w.name+(w.heroOnly?'（專武）':'（超武）')+(own?'｜已擁有 Lv.'+(own.level||1):'')}})},
+ skills(){if(!player)return[];return SKILLS.filter(sk=>!(aAthenaHero()&&B3_ELEMENT_IDS.includes(sk.id))).map(sk=>{const lock=B3_ELEMENT_IDS.includes(sk.id)&&player.elementRoute&&player.elementRoute!==sk.id;return{id:sk.id,label:(sk.icon||'✨')+' '+sk.name+'（Lv.'+skillLevel(sk.id)+' / '+normalSkillCapForHero(sk.id)+'）'+(lock?'｜本局已選其他元素':'')}})},
+ fullUlt(){if(!this.active())return'請先在 UR 測試模式進入戰鬥';player.ultCharge=100;updateUltimateButton();updateHud();return'🧪 絕招能量已滿 100%'},
+ grantWeapon(id){if(!this.active())return'請先在 UR 測試模式進入戰鬥';const w=SUPER_WEAPONS.find(x=>x.id===id&&(!x.heroOnly||x.heroOnly===selectedHero.id));if(!w)return'這把武器不能給目前英雄';if(!Array.isArray(player.superWeapons))player.superWeapons=[];const found=player.superWeapons.find(x=>x.id===w.id);if(found){found.level=5;found.cooldown=Math.min(found.cooldown||0,.15)}else player.superWeapons.push({...w,level:5,cooldown:.15});updateHud();return'🧪 已取得 '+w.name+' Lv.5'},
+ maxSkill(id){if(!this.active())return'請先在 UR 測試模式進入戰鬥';const sk=SKILLS.find(x=>x.id===id);if(!sk)return'找不到這個屬性';if(aAthenaHero()&&B3_ELEMENT_IDS.includes(sk.id))return'雅典娜不可取得元素技能';if(B3_ELEMENT_IDS.includes(sk.id)&&player.elementRoute&&player.elementRoute!==sk.id)return'本局已選擇其他元素路線';const max=normalSkillCapForHero(sk.id),old=skillLevel(sk.id);if(old>=max)return sk.name+' 已經是 Lv.'+max;if(B3_ELEMENT_IDS.includes(sk.id)&&!player.elementRoute){player.elementRoute=sk.id;player.b3FirstChoiceDone=true}for(let i=old;i<max;i++){applySkillSafe(sk);player.skills.push(sk.id)}b3SyncOrbElement();const made=autoFuseReadyWeapons();updateHud();return'🧪 '+sk.name+' 已達 Lv.'+skillLevel(sk.id)+(made.length?'｜自動合成 '+made.map(w=>w.name).join('、'):'')},
+ askAvailable(){return !!(this.active()&&selectedHero&&selectedHero.id==='rookie')},
+ askBless(kind){if(!this.askAvailable())return'三神賜福只限阿斯克';askBlessApply(kind);updateHud();return'🧪 已套用'+({odin:'奧丁',loki:'洛基',hel:'海拉'}[kind]||'')+'賜福'},
+ pause(){if(running&&!paused&&screen==='game'){paused=true;realmUrMenuPaused=true}},
+ resume(){if(realmUrMenuPaused){realmUrMenuPaused=false;if(running&&paused&&screen==='game'){paused=false;last=performance.now();raf=requestAnimationFrame(loop)}}},
+ toast(m){toast(m)}
+};
 function openCollection(){const grid=$('heroGrid');grid.innerHTML='';HEROES.forEach(h=>{const unlocked=save.unlocked.includes(h.id),b=document.createElement('button');b.className='card';b.style.opacity=unlocked?'1':'.45';b.innerHTML=`${unlocked?(HERO_ART[h.id]?`<img class="encyclopedia-art" src="${HERO_ART[h.id]}" alt="${h.name}">`:`<div class="icon">${h.icon}</div>`):'<div class="icon">🔒</div>'}<div class="rarity">${h.rarity}${h.id===save.selected?' ・使用中':''}</div><h3>${unlocked?h.name:'???'}</h3><p>${unlocked?'<b>角色天賦與專屬技能</b><br>'+h.desc+(h.id==='rookie'?'<br><br><b>三神之力・詳細說明</b><br>首次倒下時滿血復活並短暫無敵；任何復活（包含死者甦醒）都會隨機獲得一種賜福，後取得的賜福會取代前一種。<br><b>奧丁（90秒）</b>：每12次普通攻擊發動岡格尼爾，鎖定最高現有生命的敵人，主目標500%攻擊、沿途150%。<br><b>洛基（60秒）</b>：每5秒召喚一個不移動的阿斯克幻影，幻影生命為阿斯克50%、攻擊為10%，可被敵人擊殺。<br><b>海拉（90秒）</b>：受傷的60%轉為5秒冥債；有冥債時傷害×2.5，造成傷害可償還冥債；首次瀕死時清除冥債、回復40%最大生命，獲得10秒×4傷害與3秒無敵。': ''):(h.id==='yggdrasilUR'?'解鎖條件：所有非 UR 角色均已解鎖，且六項永久強化全部 Lv.10。':'透過角色召喚解鎖。')}</p>`;if(h.id==='yggdrasilUR'){
  const portrait=b.querySelector('img.encyclopedia-art');
  if(portrait){portrait.addEventListener('click',handleFenrirPortraitTap);portrait.style.touchAction='manipulation';}
@@ -4692,68 +4709,51 @@ render();
 </style>
 <style>
 /* V1.4.65: mirror the already-working UR Boss test button; avoid JS-only visibility. */
-body:has(#fenrirTestBtn[style*="display: block"]) #realmV163TestToggle,
-body:has(#fenrirTestBtn[style*="display:block"]) #realmV163TestToggle{display:block!important}
+#askBlessTestButton,#askBlessTestPanel{display:none!important}
 #realmV163TestToggle{touch-action:manipulation!important;pointer-events:auto!important;top:auto!important;bottom:calc(235px + env(safe-area-inset-bottom))!important;right:12px!important;z-index:9999!important}
-#realmV163TestPanel{pointer-events:auto!important;touch-action:pan-y!important;top:auto!important;bottom:calc(290px + env(safe-area-inset-bottom))!important;z-index:10000!important}
+#realmV163TestPanel{pointer-events:auto!important;touch-action:pan-y!important;top:calc(env(safe-area-inset-top) + 64px)!important;bottom:auto!important;max-height:calc(100vh - 330px)!important;z-index:10000!important}
 </style>
 <button id="realmV163TestToggle" type="button">🧪 測試選單</button>
 <div id="realmV163TestPanel">
- <div class="testHeading">🧪 UR 測試選單</div>
+ <div class="testHeading" style="display:flex;align-items:center;gap:6px">🧪 UR 測試選單 <small style="font-size:11px;font-weight:500;color:#9fc3e0;flex:1">（開啟時戰鬥暫停）</small><button type="button" id="realmV163CloseX" style="width:auto!important;min-height:34px!important;padding:4px 12px!important">✕</button></div>
  <button type="button" id="realmV163FullUlt">⚡ 直接絕招滿 100%</button>
  <div class="testGroup"><label for="realmV163Weapon">選擇專武／超武</label><select id="realmV163Weapon"></select><button type="button" id="realmV163GrantWeapon">取得選擇的武器 Lv.5</button></div>
  <div class="testGroup"><label for="realmV163Skill">選擇屬性（一般技能）</label><select id="realmV163Skill"></select><button type="button" id="realmV163MaxSkill">將選擇的屬性升至上限</button></div>
- <div class="testGroup"><button type="button" id="realmV163Close">關閉選單</button></div>
+ <div class="testGroup" id="realmV163AskGroup" style="display:none"><label>三神賜福（阿斯克）</label><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:6px"><button type="button" data-ask="odin">奧丁</button><button type="button" data-ask="loki">洛基</button><button type="button" data-ask="hel">海拉</button></div></div>
+ <div class="testMsg" id="realmV163Msg" style="margin-top:8px;font-size:12px;color:#ffe08a;min-height:16px"></div>
+ <div class="testGroup"><button type="button" id="realmV163Close">關閉選單並繼續戰鬥</button></div>
 </div>
 <script>
 (function(){
 'use strict';
-const toggle=document.getElementById('realmV163TestToggle');
-const panel=document.getElementById('realmV163TestPanel');
-const weapons=document.getElementById('realmV163Weapon');
-const skills=document.getElementById('realmV163Skill');
-const active=()=>{const boss=document.getElementById('fenrirTestBtn');return !!(boss&&getComputedStyle(boss).display!=='none'&&typeof player!=='undefined'&&player);};
-window.realmV163SyncTestMenu=function(){if(active()){toggle.style.setProperty('display','block','important')}else{toggle.style.removeProperty('display');panel.style.removeProperty('display')}};
-function fill(){
- const oldW=weapons.value,oldS=skills.value;
- weapons.replaceChildren();skills.replaceChildren();
- for(const w of SUPER_WEAPONS){if(w.heroOnly&&w.heroOnly!==selectedHero.id)continue;const o=document.createElement('option');o.value=w.id;o.textContent=(w.icon||'⚔️')+' '+w.name;weapons.appendChild(o)}
- for(const sk of SKILLS){if(typeof aAthenaHero==='function'&&aAthenaHero()&&B3_ELEMENT_IDS.includes(sk.id))continue;const o=document.createElement('option');o.value=sk.id;o.textContent=(sk.icon||'✨')+' '+sk.name+'（Lv.'+skillLevel(sk.id)+' / '+normalSkillCapForHero(sk.id)+'）';skills.appendChild(o)}
- if([...weapons.options].some(o=>o.value===oldW))weapons.value=oldW;
- if([...skills.options].some(o=>o.value===oldS))skills.value=oldS;
+// V1.4.71：全部改走 window.realmUrTest（遊戲內介面）；不再直接讀 player 等遊戲變數。
+const $id=id=>document.getElementById(id);
+const toggle=$id('realmV163TestToggle'),panel=$id('realmV163TestPanel'),weapons=$id('realmV163Weapon'),skills=$id('realmV163Skill'),msg=$id('realmV163Msg');
+const api=()=>window.realmUrTest;
+const active=()=>{const a=api();try{return !!(a&&a.active())}catch(_){return false}};
+const isOpen=()=>panel.style.display==='block';
+function say(t){msg.textContent=t||'';try{api()&&api().toast(t)}catch(_){}}
+function fillSelect(sel,list){const old=sel.value;sel.replaceChildren();for(const it of list){const o=document.createElement('option');o.value=it.id;o.textContent=it.label;sel.appendChild(o)}if([...sel.options].some(o=>o.value===old))sel.value=old}
+function fill(){const a=api();if(!a)return;try{fillSelect(weapons,a.weapons());fillSelect(skills,a.skills())}catch(err){console.warn('UR test list error',err)}}
+function open(){fill();try{$id('realmV163AskGroup').style.display=api().askAvailable()?'block':'none'}catch(_){}msg.textContent='';panel.style.setProperty('display','block','important');try{api().pause()}catch(_){}}
+function close(){panel.style.setProperty('display','none','important');try{api()&&api().resume()}catch(_){}}
+window.realmV163SyncTestMenu=function(){if(active()){toggle.style.setProperty('display','block','important')}else{toggle.style.setProperty('display','none','important');if(isOpen()){panel.style.setProperty('display','none','important');try{api()&&api().resume()}catch(_){}}}};
+// 觸控直接觸發（不依賴合成 click），滑鼠走 click；手指滑動超過 10px 視為捲動不觸發。
+function tap(el,fn){let sx=0,sy=0,moved=false,touchAt=0;
+ el.addEventListener('touchstart',e=>{e.stopPropagation();const t=e.changedTouches[0];sx=t.clientX;sy=t.clientY;moved=false},{passive:true});
+ el.addEventListener('touchmove',e=>{const t=e.changedTouches[0];if(Math.hypot(t.clientX-sx,t.clientY-sy)>10)moved=true},{passive:true});
+ el.addEventListener('touchend',e=>{e.stopPropagation();if(moved)return;if(e.cancelable)e.preventDefault();touchAt=Date.now();fn()},{passive:false});
+ el.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();if(Date.now()-touchAt<700)return;fn()});
 }
-function toggleTestMenu(e){if(e){e.preventDefault();e.stopPropagation();}const opening=getComputedStyle(panel).display==='none';if(opening){try{fill()}catch(err){console.warn('UR test list error',err)}panel.style.setProperty('display','block','important')}else panel.style.setProperty('display','none','important');}
-// V1.4.70: A touch triggers a synthesized click. Do NOT toggle again on touchend.
-toggle.addEventListener('click',toggleTestMenu);
-// Keep game-level touch/click handlers from swallowing panel controls.
-for(const ev of ['pointerdown','pointerup','touchstart','touchend','mousedown','mouseup']){
- toggle.addEventListener(ev,e=>e.stopPropagation(),{passive:true});
- panel.addEventListener(ev,e=>e.stopPropagation(),{passive:true});
-}
-document.getElementById('realmV163Close').addEventListener('click',()=>panel.style.setProperty('display','none','important'));
-document.getElementById('realmV163FullUlt').addEventListener('click',()=>{if(!active()){toast('請先進入 UR 測試戰鬥');return;}player.ultCharge=100;updateUltimateButton();toast('🧪 絕招能量已滿 100%')});
-document.getElementById('realmV163GrantWeapon').addEventListener('click',()=>{
- if(!active()){toast('請先進入 UR 測試戰鬥');return;}const w=SUPER_WEAPONS.find(x=>x.id===weapons.value&&(!x.heroOnly||x.heroOnly===selectedHero.id));if(!w)return;
- if(!Array.isArray(player.superWeapons))player.superWeapons=[];
- const found=player.superWeapons.find(x=>x.id===w.id);
- if(found){found.level=5;found.cooldown=Math.min(found.cooldown||0,.15)}else player.superWeapons.push({...w,level:5,cooldown:.15});
- updateHud();toast('🧪 已取得 '+w.name+' Lv.5');
-});
-document.getElementById('realmV163MaxSkill').addEventListener('click',()=>{
- if(!active()){toast('請先進入 UR 測試戰鬥');return;}const sk=SKILLS.find(x=>x.id===skills.value);if(!sk)return;
- if(typeof aAthenaHero==='function'&&aAthenaHero()&&B3_ELEMENT_IDS.includes(sk.id)){toast('雅典娜不可取得元素技能');return}
- const max=normalSkillCapForHero(sk.id),old=skillLevel(sk.id);
- if(B3_ELEMENT_IDS.includes(sk.id)&&player.elementRoute&&player.elementRoute!==sk.id){toast('本局已選擇其他元素路線');return}
- if(B3_ELEMENT_IDS.includes(sk.id)&&!player.elementRoute){player.elementRoute=sk.id;player.b3FirstChoiceDone=true}
- for(let i=old;i<max;i++){applySkillSafe(sk);player.skills.push(sk.id)}
- if(typeof b3SyncOrbElement==='function')b3SyncOrbElement();
- updateHud();fill();toast('🧪 '+sk.name+' 已達 Lv.'+max);
-});
-// No timer or persistent data: this is available only in the already-unlocked UR developer session.
-const observer=new MutationObserver(()=>window.realmV163SyncTestMenu());
-// Sync after entering the battle; HUD does not necessarily change its class/style at start.
+tap(toggle,()=>{isOpen()?close():open()});
+tap($id('realmV163Close'),close);tap($id('realmV163CloseX'),close);
+document.querySelectorAll('#realmV163AskGroup [data-ask]').forEach(b=>tap(b,()=>say(api().askBless(b.dataset.ask))));
+tap($id('realmV163FullUlt'),()=>{say(api().fullUlt())});
+tap($id('realmV163GrantWeapon'),()=>{say(api().grantWeapon(weapons.value));fill()});
+tap($id('realmV163MaxSkill'),()=>{say(api().maxSkill(skills.value));fill()});
+// 面板內的操作不要傳到遊戲（搖桿、畫面點擊）
+for(const ev of ['pointerdown','pointerup','mousedown','mouseup','touchstart','touchend']){panel.addEventListener(ev,e=>e.stopPropagation(),{passive:true})}
 setInterval(window.realmV163SyncTestMenu,450);
-const hud=document.getElementById('hud');if(hud)observer.observe(hud,{attributes:true,attributeFilter:['style','class']});
 window.realmV163SyncTestMenu();
 })();
 </script>
