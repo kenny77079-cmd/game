@@ -37,7 +37,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="神域之門">
 <meta name="mobile-web-app-capable" content="yes">
-<title>神域之門 V1.4.94｜九宮格選角、大關底圖、連擊 0.2 秒</title>
+<title>神域之門 V1.4.97｜首領戰能量與開場技能調整</title>
 <!-- V46：修正 V41 操作區按鈕間意外輸出的字面 \n 字元；保留 V41 技能聯動及 V40 時間排版。 -->
 <style>
 :root{--bg:#101827;--panel:#182438;--gold:#ffd166;--mint:#74f2ce;--red:#ff6b6b;--text:#f5f7fb;--muted:#aebbd0}
@@ -431,7 +431,7 @@ body:not(.battle-active) #unifiedBattleHud{display:none!important}
    <div id="realmTrialPicker" aria-label="新玩法入口"><div class="realm-mode-caption">新玩法</div><button type="button" id="realmModeTrial">⚡ 諸神試煉</button></div>
    <div class="v709-overline">REALM GATE · THE LAST DEFENSE</div>
    <h1>神域之門</h1>
-   <div class="v709-subtitle">最後防線 <span>V1.4.94</span></div>
+   <div class="v709-subtitle">最後防線 <span>V1.4.97</span></div>
    <button class="btn secondary" id="sfxToggleMain" type="button">🔊 音效開</button>
   </header>
   <section class="hero-select-wrap v709-showcase" aria-label="出戰英雄">
@@ -442,7 +442,7 @@ body:not(.battle-active) #unifiedBattleHud{display:none!important}
   <nav class="rpg-menu v709-menu" aria-label="遊戲功能"><button class="btn secondary" id="collectionBtn">角色圖鑑</button><button class="btn secondary" id="skillArchiveBtn">技能圖鑑</button><button class="btn secondary" id="talentBtn">💎 永久強化</button></nav>
   <section class="rpg-settings v709-settings">
    <label class="v709-kid" for="kidModeCheck"><input type="checkbox" id="kidModeCheck">🧸 KID 模式<span>怪物血量減半，英雄血量 ×2，英雄承傷 30%（四種玩法共用）</span></label>
-   <label class="v709-difficulty" for="difficultySelect">⚔ 難度<select id="difficultySelect"><option value="normal">一般模式</option><option value="hard">困難模式｜怪物全能力 ×2</option><option value="inferno">煉獄模式｜怪物 ×2、英雄 ×60%</option></select></label>
+   <label class="v709-difficulty" for="difficultySelect">⚔ 難度<select id="difficultySelect"><option value="normal">一般模式</option><option value="hard">困難模式｜首領戰（15 技能、王 生命×1.5 攻擊×1.2）</option><option value="inferno">煉獄模式｜首領戰（10 技能、王 生命×2 攻擊×1.3）</option></select></label>
   </section>
   <div class="rpg-footer v709-footer"><span class="small" id="saveText">本機存檔已就緒</span><button type="button" class="rpg-save-toggle">⚙ 存檔管理 ▾</button></div>
   <div class="save-tools">
@@ -532,7 +532,7 @@ const HEROES=[ {id:'rookie',name:'阿斯克',rarity:'N',icon:'🏹',desc:'天賦
 {id:'multi',name:'擴散',icon:'🎯',desc:'每次攻擊額外射出 1 支箭。可疊加。',apply:p=>p.multi++},
 {id:'pierce',name:'破甲',icon:'💠',desc:'箭矢可多穿透 1 隻怪物。可疊加。',apply:p=>p.pierce++},
 {id:'heart',name:'伊登的蘋果',icon:'💚',desc:'最大生命 +25，並恢復 25 點生命。',apply:p=>{p.maxHp+=25;p.hp=Math.min(p.maxHp,p.hp+25)}},
-{id:'armor',name:'硬化皮膚',icon:'🛡️',desc:'護甲 +1，減少受到的傷害。',apply:p=>p.armor++},
+{id:'armor',name:'硬化皮膚',icon:'🛡️',desc:'護甲 +1；每點護甲減少 2% 受到的傷害（最多 60%）。',apply:p=>p.armor++},
 {id:'critical',name:'重創',icon:'✨',desc:'暴擊率每級 +8%，最高 50%；暴擊傷害倍率每級 +0.25，技能最高 Lv.5。',apply:p=>{p.crit=Math.min(.50,p.crit+.08);p.critDamage=(p.critDamage||2)+.25}},
 {id:'fire',name:'鳳凰之息',icon:'🔥',desc:'箭矢命中附加燃燒（每級 +1 層）；每 0.5 秒每層造成 1 點傷害。每隻敵人最多 10×等級 層，3 秒未再被燃燒命中會逐漸消退。Lv.5 燃燒擊殺後，在死亡位置生成半徑 10、持續 3 秒的火場，每 0.5 秒造成 100% 攻擊力傷害。',apply:p=>p.fire+=5},
 {id:'ice',name:'斯卡蒂之擊',icon:'❄️',desc:'箭矢化為藍色冰錐。命中使敵人緩速 30%；同一敵人累計命中 5 支冰箭後冰凍 2 秒。每次升級緩速 +10%、冰凍 +0.2 秒，最高 70%／2.8 秒。同一敵人解凍後 5 秒內不會再被冰凍；Boss 也可被冰凍（冰凍中攻擊頻率 −70%，芬里爾最多 1.3 秒）。Lv.5 解凍時冰爆：攻擊力 ×5，冰凍期間每中一支冰箭 +0.2 倍，最高 ×15。',apply:p=>{p.iceLevel=Math.min(5,(p.iceLevel||0)+1)}},
@@ -540,7 +540,7 @@ const HEROES=[ {id:'rookie',name:'阿斯克',rarity:'N',icon:'🏹',desc:'天賦
 {id:'regen',name:'精靈祝福',icon:'🌿',desc:'每秒恢復 0.7 點生命。',apply:p=>p.regen+=.7},
 {id:'orb',name:'守護光球',icon:'🪄',desc:'Lv.1 兩顆，每級 +1，最多六顆；依本局選定的單一元素路線附魔。',apply:p=>{const lv=Math.min(5,(p.orbLevel||0)+1);p.orbLevel=lv;p.orbs=Math.min(6,lv+1);}},
 {id:'rapidShot',name:'連擊',icon:'➶',desc:'每級在前一輪後 0.2 秒，完整重播一次擴散扇形；連擊也會套用烈焰、冰霜與雷霆效果。',apply:p=>p.rapidShot=(p.rapidShot||0)+1},
-{id:'revive',name:'死者甦醒',icon:'💖',desc:'每級增加 1 次死者甦醒，最多累積 10 次；死亡時消耗 1 次並恢復最大生命值 50%。',apply:p=>p.reviveCharges=Math.min(10,(p.reviveCharges||0)+1)}
+{id:'revive',name:'死者甦醒',icon:'💖',desc:'每級增加 1 次死者甦醒，最多累積 10 次；死亡時消耗 1 次並恢復最大生命值 50%（阿斯克 80%）。',apply:p=>p.reviveCharges=Math.min(10,(p.reviveCharges||0)+1)}
 ];
 const SUPER_WEAPONS=[
  {id:'storm',name:'諸神黃昏·末日風暴',icon:'🌩️',needs:['lightning','pierce','rapid'],recipe:'索爾之牙 Lv.5 + 破甲 Lv.5 + 加速箭 Lv.5',desc:'每 0.4 秒釋放冰雷脈衝，造成 2.7 倍攻擊傷害。',color:'#facc15',radius:140,mult:2.7,interval:.4},
@@ -772,7 +772,7 @@ if(difficultySelect){difficultySelect.value=difficultyRead();difficultySelect.ad
 let kidModeActive=false;
 function cDamageCharge(e){if(!player||!running||cUltEnergyLocked())return;if(e){if(Number.isFinite(e.cLastEnergyHit)&&elapsed-e.cLastEnergyHit<.3)return;e.cLastEnergyHit=elapsed;}player.ultCharge=Math.min(100,(player.ultCharge||0)+.01);}
 // V1.4.21：僅直接命中且實際扣血的事件累積雅典娜衝擊波次數。
-function athenaRegisterDirectHit(e,hpBefore){
+function athenaRegisterDirectHit(e,hpBefore){bmBasicCharge();
  if(!player||!aAthenaHero()||player.athenaShockProcessing||!(hpBefore>e.hp))return;
  player.athenaHitCount=(player.athenaHitCount||0)+1;
  // V1.4.21: visible confirmation that direct hits are actually being counted.
@@ -832,7 +832,7 @@ function currentRegenPerSec(){if(!player||!selectedHero)return 0;let r=player.re
 function applySkillSafe(sk){const ub=(aAthenaHero()&&player.athenaUltTimer>0)?5:0;player.rate-=ub;sk.apply(player);player.rate+=ub;}
 // V1.4.25：燃燒／鳳凰火場等持續傷害不扣防禦，直接扣血（保留絕招充能）。
 function dealEnemyTrueDamage(e,raw){if(!e||e.hp<=0)return 0;const amount=Math.max(0,raw);e.hp-=amount;cDamageCharge(e);return amount;}
-function kidModeEnemy(e){if(e&&!Number.isFinite(e.defense))e.defense=1;if(difficultyMode!=='normal'&&e){e.hp*=2;e.maxHp*=2;e.dmg*=2;e.defense=Math.min(6,(e.defense||1)*2);}if(kidModeActive&&e){e.hp=Math.max(.5,e.hp*.5);e.maxHp=Math.max(.5,e.maxHp*.5)}return e}
+function kidModeEnemy(e){if(e&&!Number.isFinite(e.defense))e.defense=1;if(difficultyMode!=='normal'&&e&&!BM.on){e.hp*=2;e.maxHp*=2;e.dmg*=2;e.defense=Math.min(6,(e.defense||1)*2);}if(kidModeActive&&e){e.hp=Math.max(.5,e.hp*.5);e.maxHp=Math.max(.5,e.maxHp*.5)}return e}
 function kidModeRead(){try{return localStorage.getItem('endlessBowKidMode')==='1'}catch(_){return false}}
 function kidModeWrite(on){try{localStorage.setItem('endlessBowKidMode',on?'1':'0')}catch(_){}}
 const kidModeCheckbox=document.getElementById('kidModeCheck');
@@ -840,7 +840,7 @@ window.addEventListener('storage',e=>{if(e.key==='endlessBowKidMode'&&kidModeChe
 const A_HERO_BODY_HIT_RADIUS={"rookie": 12, "skadiN": 12, "swift": 12, "guardian": 15, "flame": 15, "moon": 13, "dragon": 16, "yggdrasilUR": 17,"athenaSSR":14};
 // 英雄軀幹受擊半徑；保留原碰撞中心 y-10。
 function startRun(){configureStageWorldV714();if(jotunStage===2&&!save.jotunUnlocked){toast("請先完成第一大關");return;}if(jotunStage===3&&!save.jotun3Unlocked){toast("請先完成第二大關");return;}difficultyMode=difficultySelect?difficultySelect.value:'normal';kidModeActive=difficultyMode==='normal'&&!!(kidModeCheckbox&&kidModeCheckbox.checked);selectedHero=HEROES.find(h=>h.id===save.selected)||HEROES[0];const h=selectedHero;save=normalizeSave(save);const hu=save.heroUpgrades[h.id]||{attack:0,magnet:0,rate:0,hp:0,armor:0,spd:0};const maxHp=Math.round(h.hp*(1+hu.hp*.10))*(kidModeActive?2:1);player={refreshLeft:3,x:world.w/2,y:world.h/2,r:(A_HERO_BODY_HIT_RADIUS[h.id]??14),hp:maxHp,maxHp,atk:h.atk*(1+hu.attack*.10)*(h.id==='yggdrasilUR'?1.2:1)*(1),spd:h.spd+hu.spd*5,rate:h.rate*(1+hu.rate*.02),armor:(h.id==='guardian'?1:0)+(h.id==='yggdrasilUR'?(trAwFor('yggdrasilUR')>=3?5:3):0)+hu.armor,crit:.05,critDamage:2,multi:0,pierce:0,magnet:85*(1+hu.magnet*.05),fire:0,iceLevel:0,lightningLevel:0,regen:0,orbs:0,orbLevel:0,orbFireLevel:0,orbIceLevel:0,orbLightningLevel:0,rapidShot:0,reviveCharges:0,talentClock:0,talentUltClock:0,rookieRevived:false,swiftTalentClock:0,swiftTalentActive:0,swiftTalentSpeed:1,burnPower:0,xp:0,nextXp:5,level:1,invuln:0,skills:[],superWeapons:[],bigKills:0,color:h.color};
-if(difficultyMode==='inferno'){player.maxHp=Math.max(1,Math.round(player.maxHp*.6));player.hp=player.maxHp;player.atk*=.6;player.armor*=.6;}
+/* V1.4.96：煉獄不再降低英雄能力 */
 // 角色指定起始技能：透過既有技能 apply 函式套用，讓等級、HUD 與實際效果一致。
 // A 角色起始技能：使用既有技能 apply，確保等級與實際數值同步。
 const heroStartingSkills={flame:'critical',moon:'orb',dragon:'multi',yggdrasilUR:'rapidShot'};
@@ -849,7 +849,7 @@ if(startingSkillId){
  const sk=SKILLS.find(x=>x.id===startingSkillId);
  if(sk){sk.apply(player);player.skills.push(startingSkillId);}
 }
-skadiFrostRainVfx.length=0;phoenixFireFields=[];fenrirCracks=[];weaponFx=[];enemies=[];bullets=[];gems=[];particles=[];damageTexts=[];chests=[];hostileShots=[];rapidShotQueue=[];elapsed=0;cUltEnergyLockUntil=-1;trStartRun();jotunReset();spawnClock=0;attackClock=.2;runCoins=0;runEarned=0;runBanked=false;runPartBanked=0;player.ultCharge=0;player.ultReady=false;player.athenaHitCount=0;player.athenaUltTimer=0;player.athenaUltHealClock=0;player.athenaSpearUntil=0;specialEventClock=60;lastSpecialKill=0;specialEventIndex=0;finalBossSpawned=false;enemyId=0;smallKillCount=0;megaEliteCount=0;running=true;paused=false;screen='game';$('fenrirTestBtn').style.display=fenrirPrivateEnabled?'block':'none';BowAudio.setFenrirBattle(false);show(null);$('heroName').textContent=h.name+(jotunStage===3?' 🔥':jotunStage===2?' ❄':'');$('pauseBtn').textContent='Ⅱ 暫停';last=performance.now();cancelAnimationFrame(raf);raf=requestAnimationFrame(loop)}
+skadiFrostRainVfx.length=0;phoenixFireFields=[];fenrirCracks=[];weaponFx=[];enemies=[];bullets=[];gems=[];particles=[];damageTexts=[];chests=[];hostileShots=[];rapidShotQueue=[];elapsed=0;cUltEnergyLockUntil=-1;trStartRun();jotunReset();spawnClock=0;attackClock=.2;runCoins=0;runEarned=0;runBanked=false;runPartBanked=0;player.ultCharge=0;player.ultReady=false;player.athenaHitCount=0;player.athenaUltTimer=0;player.athenaUltHealClock=0;player.athenaSpearUntil=0;specialEventClock=60;lastSpecialKill=0;specialEventIndex=0;finalBossSpawned=false;enemyId=0;smallKillCount=0;megaEliteCount=0;running=true;paused=false;screen='game';$('fenrirTestBtn').style.display=fenrirPrivateEnabled?'block':'none';BowAudio.setFenrirBattle(false);show(null);$('heroName').textContent=h.name+(jotunStage===3?' 🔥':jotunStage===2?' ❄':'');$('pauseBtn').textContent='Ⅱ 暫停';bmSetup();last=performance.now();cancelAnimationFrame(raf);raf=requestAnimationFrame(loop);if(BM.on)setTimeout(bmOpenPick,40);}
 // 阿斯克三神賜福試作：只在最後防線生效，維持 rookie 存檔 ID。
 const ASK_BLESS_SECONDS=120;
 function askBlessActive(name){return !!(player&&selectedHero&&selectedHero.id==='rookie'&&player.askBless&&player.askBless.kind===name&&player.askBless.left>0);}
@@ -974,6 +974,7 @@ function askHelJudge(){
 }
 function askHelTakeDamage(amount){
  if(!player)return 0;
+ if(BM.on)amount=Math.min(amount,player.maxHp*.4); /* V1.4.96：首領戰單次傷害上限 40% */
  if(selectedHero&&selectedHero.id==='flame'&&player.hp<player.maxHp*.40)amount*=(trAw>=3?.75:.85);
  if(!askBlessActive('hel')){player.hp-=amount;return amount;}
  const delayed=amount*.60,immediate=amount-delayed;
@@ -1119,7 +1120,7 @@ function tryHeroRevive(){
 }
 function tryAnyRevive(){const r_=tryAnyRevive0();if(r_&&TR){TR.reviveUsed=true;TR.revives++;}return r_}
 function tryAnyRevive0(){
- if(player&&player.reviveCharges>0){player.reviveCharges--;BowAudio.sfx('revive');updateHud();player.hp=Math.max(1,Math.ceil(player.maxHp*.5));player.invuln=2.0;burst(player.x,player.y,'#f9a8d4',24);for(let i=0;i<20;i++){const a=i*Math.PI*2/20;particles.push({x:player.x,y:player.y,vx:Math.cos(a)*170,vy:Math.sin(a)*170,life:.7,color:i%2?'#f9a8d4':'#fff1f2'})}askBlessRevived();toast('💖 死者甦醒！恢復 50% 生命，剩餘 '+player.reviveCharges+' 次');return true;}
+ if(player&&player.reviveCharges>0){player.reviveCharges--;BowAudio.sfx('revive');updateHud();player.hp=Math.max(1,Math.ceil(player.maxHp*(selectedHero&&selectedHero.id==='rookie'?.8:.5)));/* V1.4.95：阿斯克 80%、其他 50% */player.invuln=2.0;burst(player.x,player.y,'#f9a8d4',24);for(let i=0;i<20;i++){const a=i*Math.PI*2/20;particles.push({x:player.x,y:player.y,vx:Math.cos(a)*170,vy:Math.sin(a)*170,life:.7,color:i%2?'#f9a8d4':'#fff1f2'})}askBlessRevived();toast('💖 死者甦醒！恢復 '+(selectedHero&&selectedHero.id==='rookie'?80:50)+'% 生命，剩餘 '+player.reviveCharges+' 次');return true;}
  return tryHeroRevive();
 }
 function endRun(victory=false){if(!running)return;try{trOnRunEnd(victory)}catch(_e){console.warn('trial',_e)}if(victory){addRunReward(jotunStage===3?2250:jotunStage===2?1500:1000);if(jotunStage===1){save.jotunUnlocked=true;}if(jotunStage===2){save.jotun3Unlocked=true;}}running=false;paused=false;screen='over';$('fenrirTestBtn').style.display='none';resetStick();bankRunCoins();save.totalKills=(save.totalKills||0)+(player.kills||0);save.best=Math.max(save.best||0,elapsed);saveGame();$('endTime').textContent=fmtTime(elapsed);$('endKills').textContent=player.kills||0;$('endCoins').textContent=Math.ceil(coinTenth(runCoins));$('resultSummary').textContent=victory?`${selectedHero.name} ${finalBossSpawned?(jotunStage===3?'擊敗詭計之神·洛基，通關！':jotunStage===2?'擊敗霜巨人之王·索列姆，通關！':'擊敗最終 Boss 芬里爾，通關！'):'成功完成挑戰！'}通關獎勵已計入本局上限 3,500 金幣！本局結餘 ${Math.ceil(coinTenth(runCoins))} 金幣。`:`${selectedHero.name} 存活了 ${fmtTime(elapsed)}，獲得 ${Math.ceil(coinTenth(runCoins))} 金幣。`;show('gameOverScreen')}
@@ -1202,6 +1203,7 @@ function drawSkillChoices(isChest=false){
     drawSkillChoices(isChest);return;
    }
    if(firstRoute){player.elementRoute=sk.id;player.b3FirstChoiceDone=true;}
+   else if(!player.elementRoute&&!aAthenaHero()&&B3_ELEMENT_IDS.includes(sk.id)){player.elementRoute=sk.id;toast('元素路線：'+sk.name+'（其他元素關閉）');}
    applySkillSafe(sk);player.skills.push(sk.id);
    b3SyncOrbElement();
    const made=autoFuseReadyWeapons();updateHud();
@@ -1212,6 +1214,7 @@ function drawSkillChoices(isChest=false){
     $('skillScreen').querySelector('h2').textContent='選擇寶箱技能獎勵';
    }
    toast((isChest?'寶箱技能強化：':'習得技能：')+sk.name+' Lv.'+skillLevel(sk.id)+(made.length?'｜自動合成 '+made.map(w=>w.name).join('、'):''));
+   if(!isChest&&bmAfterPick())return;
    show(null);paused=false;last=performance.now();raf=requestAnimationFrame(loop);
   };
   $('skillChoices').appendChild(b);
@@ -1619,6 +1622,7 @@ function updateUltimateButton(){
 }
 let lastUltimateTap=0;
 function showDamageNumber(x,y,value,isCrit=false){
+ if(BM.on&&!BM.inferno&&player&&running)player.ultCharge=Math.min(100,(player.ultCharge||0)+.1); /* V1.4.97：困難—每個傷害數字 +0.1% */
  if(!Array.isArray(damageTexts))damageTexts=[];
  if(fxLow&&!isCrit&&damageTexts.length>25)return;
  damageTexts.push({x,y:Number(y)-8,text:Math.max(1,Math.round(value)).toLocaleString('en-US'),crit:!!isCrit,life:isCrit?1.15:0.85,maxLife:isCrit?1.15:0.85,vy:isCrit?-64:-38});
@@ -2032,11 +2036,11 @@ function countSmallKill(e){
 }
 function spawnMegaElite(x,y){if(!cCanSpawnMonster())return;if(jotunStage===3){s3SpawnMega(x,y);return;}if(jotunStage===2){const a=Math.random()*Math.PI*2,st=JOTUN_STATS.ice_colossus,scale=1+elapsed/95;const mx=Math.max(35,Math.min(world.w-35,x+Math.cos(a)*250)),my=Math.max(35,Math.min(world.h-35,y+Math.sin(a)*250));
  const mp=insideWalkZone(mx,my)?{x:mx,y:my}:nearestReachableGemPoint(mx,my);
- enemies.push(kidModeEnemy({id:enemyId++,x:mp.x,y:mp.y,r:st.r,hp:st.hp*scale*cAttritionHp(),maxHp:st.hp*scale*cAttritionHp(),spd:st.spd,dmg:st.dmg*scale,type:"mega",jotunKind:"ice_colossus",jotunCooldown:3,hit:0}));
+ enemies.push(kidModeEnemy({id:enemyId++,x:mp.x,y:mp.y,r:st.r,hp:st.hp*scale*cAttritionHp(),maxHp:st.hp*scale*cAttritionHp(),spd:st.spd,dmg:st.dmg*(1+((1+elapsed/110)*cMonsterBalance().atk-1)/3),type:"mega",jotunKind:"ice_colossus",jotunCooldown:3,hit:0}));
  megaEliteCount++;burst(mp.x,mp.y,'#8ddcff',38);toast('⚠️ 冰封戰爭巨像出現！');return;}
  const angle=Math.random()*Math.PI*2,dist=260;
  const stats={r:31,hp:195*(1+elapsed/85)*3,spd:28+Math.min(25,elapsed/25),dmg:51+Math.floor(elapsed/40)*3};
- const e={id:enemyId++,x:x+Math.cos(angle)*dist,y:y+Math.sin(angle)*dist,r:stats.r,hp:stats.hp,maxHp:stats.hp,spd:stats.spd,dmg:stats.dmg,type:'mega',hit:0,attackClock:.7,skillReward:true};
+ const e={id:enemyId++,x:x+Math.cos(angle)*dist,y:y+Math.sin(angle)*dist,r:stats.r,hp:stats.hp,maxHp:stats.hp,spd:stats.spd,dmg:stats.dmg,atkBase:51,atkScale:stats.dmg/51,type:'mega',hit:0,attackClock:.7,skillReward:true};
  enemies.push(kidModeEnemy(cApplyMonsterBalance(e)));megaEliteCount++;
  burst(e.x,e.y,'#f472b6',38);toast(`⚠️ 大精英怪出現！已擊殺 ${smallKillCount} 隻小怪，擊敗可獲得技能！`);
 }
@@ -2064,11 +2068,12 @@ function awardEnemyDeath(e){
  if(jotunStage===2&&e.jotunKind==='ice_elemental')jotunAddIce(e.x,e.y,72,9);
  player.kills=(player.kills||0)+1;
  countSmallKill(e);countEliteKill(e);
- if(!cUltEnergyLocked())player.ultCharge=Math.min(100,(player.ultCharge||0)+(e.cMoonKill?2.5:5)); // V1.4.86：月影迴旋擊殺能量減半
+ if(!cUltEnergyLocked()&&!bmNoEnergy())player.ultCharge=Math.min(100,(player.ultCharge||0)+(e.cMoonKill?2.5:5)); // V1.4.86：月影迴旋擊殺能量減半
  addRunReward((e.type==='boss'||e.type==='megaBoss'||e.type==='finalBoss')?2.5:e.type==='mega'?2:e.type==='brute'?1:0.2);
  const xp=(e.type==='boss'||e.type==='megaBoss')?30:e.type==='brute'?6:e.type==='horde'?2:1;
- addGem(e.x,e.y,xp);
+ if(!e.bmMob)addGem(e.x,e.y,xp);
  burst(e.x,e.y,(e.type==='boss'||e.type==='megaBoss')?'#f0abfc':e.type==='mega'?'#f472b6':'#ffd166',(e.type==='boss'||e.type==='megaBoss'||e.type==='mega')?20:8);
+ if(BM.on&&e.bmBoss){if(BM.queue.length){toast('✅ '+(e.name||'首領')+' 擊破！');setTimeout(()=>{if(running)bmNext()},1500);return true;}endRun(true);return true;}
  if(e.type==='finalBoss'){endRun(true);return true;}
  if(e.type==='megaBoss'||(e.type==='boss'&&bossEventChestOK(e)))spawnBossChest(e.x,e.y);
  if(e.type==='mega')rewardMegaEliteSkill(e);
@@ -2112,7 +2117,7 @@ function cMonsterHitRadius(e){
 }
 function spawnEnemy(){if(jotunStage===3){s3SpawnEnemy();return;}if(jotunStage===2){jotunSpawnEnemy();return;}if(!cCanSpawnMonster())return;const a=cSpawnAngle(),dist=Math.max(W,H)*.65+100;let x=player.x+Math.cos(a)*dist,y=player.y+Math.sin(a)*dist;const t=Math.random();const eliteChance=cMonsterBalance().elite;let type=t<eliteChance?'brute':t<eliteChance+(1-eliteChance)*.35?'slime':t<eliteChance+(1-eliteChance)*.56?'skeleton':t<eliteChance+(1-eliteChance)*.69?'wisp':t<eliteChance+(1-eliteChance)*.83?'beetle':t<eliteChance+(1-eliteChance)*.94?'shaman':'shade';let scale=1+elapsed/85;
  const stats={slime:{r:11,hp:20,spd:48,dmg:10},skeleton:{r:13,hp:30,spd:57,dmg:10},brute:{r:19,hp:65,spd:35,dmg:17},wisp:{r:9,hp:17,spd:82,dmg:8},beetle:{r:15,hp:44,spd:43,dmg:14},shaman:{r:14,hp:36,spd:39,dmg:12},shade:{r:12,hp:28,spd:69,dmg:11}};
- const st=stats[type];let e={id:enemyId++,x,y,r:st.r,hp:st.hp*scale,maxHp:st.hp*scale,spd:st.spd+Math.min(35,elapsed/20),dmg:st.dmg*scale,defense:Math.min(4,scale),type,hit:0};enemies.push(kidModeEnemy(cApplyMonsterBalance(e)))}
+ const st=stats[type];let e={id:enemyId++,x,y,r:st.r,hp:st.hp*scale,maxHp:st.hp*scale,spd:st.spd+Math.min(35,elapsed/20),dmg:st.dmg*scale,atkBase:st.dmg,atkScale:scale,defense:Math.min(4,scale),type,hit:0};enemies.push(kidModeEnemy(cApplyMonsterBalance(e)))}
 function nearestEnemy(){let best=null,bd=Infinity;for(const e of enemies){let d=(e.x-player.x)**2+(e.y-player.y)**2;if(d<bd){bd=d;best=e}}return best}
 function shoot(){
  if(player&&selectedHero.id==='rookie'){player.askAttackSerial=(player.askAttackSerial||0)+1;askOdinGungnir();}
@@ -2430,10 +2435,10 @@ function jotunDrawGround(camX,camY){
  ctx.restore();
 }
 function jotunDrawWarning(e){const w=e.jotunWarn;if(!w)return;ctx.save();ctx.fillStyle='rgba(250,42,63,.21)';ctx.strokeStyle='rgba(255,94,100,.85)';ctx.lineWidth=2;ctx.beginPath();if(w.shape==='circle'){ctx.arc(w.x,w.y,w.r,0,Math.PI*2);}else if(w.shape==='line'){const a=w.a;ctx.translate(e.x,e.y);ctx.rotate(a);ctx.rect(0,-w.width/2,w.len,w.width);}else{ctx.moveTo(e.x,e.y);ctx.arc(e.x,e.y,w.r,w.a-.55,w.a+.55);ctx.closePath();}ctx.fill();ctx.stroke();ctx.restore();}
-function jotunDamagePlayer(dmg){if(!player||player.invuln>0)return;if(jotunStage===3)s3AddBurn(1);const actual=Math.max(1,Math.round(dmg*(kidModeActive?.3:1)-player.armor));askHelTakeDamage(actual);player.invuln=.55;showPlayerDamageNumber(actual);burst(player.x,player.y,'#9ddcff',7);if(player.hp<=0){if(!tryAnyRevive()){player.hp=0;updateHud();endRun(false)}}}
+function jotunDamagePlayer(dmg){if(!player||player.invuln>0)return;if(jotunStage===3)s3AddBurn(1);const actual=Math.max(1,Math.round(dmg*(kidModeActive?.3:1)*cArmorMul()));askHelTakeDamage(actual);player.invuln=.55;showPlayerDamageNumber(actual);burst(player.x,player.y,'#9ddcff',7);if(player.hp<=0){if(!tryAnyRevive()){player.hp=0;updateHud();endRun(false)}}}
 function jotunSpawnBoss(kind){const data=kind==='general'?{r:43,hp:25000,spd:36,dmg:85,type:'boss'}:kind==='queen'?{r:43,hp:45000,spd:35,dmg:100,type:'boss'}:{r:58,hp:1200000,spd:52,dmg:190,type:'finalBoss'};const a=Math.random()*Math.PI*2,dist=Math.max(W,H)*.55;const x=Math.max(50,Math.min(world.w-50,player.x+Math.cos(a)*dist)),y=Math.max(50,Math.min(world.h-50,player.y+Math.sin(a)*dist));const e={id:enemyId++,x,y,...data,maxHp:data.hp,jotunKind:kind,name:JOTUN_NAMES[kind],hit:0,jotunCooldown:kind==='king'?1.4:2.8,jotunPhase:1};enemies.push(kidModeEnemy(e));toast('⚠️ '+e.name+' 降臨！');}
 function cSpawnAngle(){const vx=player&&player.cVelX||0,vy=player&&player.cVelY||0;if(Math.hypot(vx,vy)>40&&Math.random()<.6)return Math.atan2(vy,vx)+(Math.random()-.5)*1.8;return Math.random()*Math.PI*2;} // V1.4.83：玩家移動時多數新魔物生在前方
-function jotunSpawnEnemy(){if(!cCanSpawnMonster())return;const a=cSpawnAngle(),dist=Math.max(W,H)*(.63+Math.random()*.18);const x=Math.max(24,Math.min(world.w-24,player.x+Math.cos(a)*dist)),y=Math.max(24,Math.min(world.h-24,player.y+Math.sin(a)*dist));const pt=insideWalkZone(x,y)?{x,y}:nearestReachableGemPoint(x,y);const t=elapsed;let pool=t<300?['frost_undead','snow_wolf','ice_knight']:t<600?['frost_undead','snow_wolf','ice_knight','frost_mage','frost_guard']:t<900?['ice_knight','frost_mage','frost_guard','ice_berserker','ice_elemental']:['frost_guard','ice_berserker','ice_elemental','frost_mage'];const eliteChance=cMonsterBalance().elite;let kind=pool[Math.floor(Math.random()*pool.length)];if(Math.random()<eliteChance)kind=['frost_guard','ice_berserker','ice_elemental'][Math.floor(Math.random()*3)];const st=JOTUN_STATS[kind],scale=1+elapsed/110;const e={id:enemyId++,x:pt.x,y:pt.y,r:st.r,hp:st.hp*scale,maxHp:st.hp*scale,spd:st.spd,dmg:st.dmg*scale,type:kind==='frost_guard'||kind==='ice_berserker'||kind==='ice_elemental'?'brute':kind==='frost_mage'?'shaman':kind==='snow_wolf'?'wisp':'skeleton',jotunKind:kind,hit:0,jotunCooldown:2+Math.random()};enemies.push(kidModeEnemy(cApplyMonsterBalance(e)));}
+function jotunSpawnEnemy(){if(!cCanSpawnMonster())return;const a=cSpawnAngle(),dist=Math.max(W,H)*(.63+Math.random()*.18);const x=Math.max(24,Math.min(world.w-24,player.x+Math.cos(a)*dist)),y=Math.max(24,Math.min(world.h-24,player.y+Math.sin(a)*dist));const pt=insideWalkZone(x,y)?{x,y}:nearestReachableGemPoint(x,y);const t=elapsed;let pool=t<300?['frost_undead','snow_wolf','ice_knight']:t<600?['frost_undead','snow_wolf','ice_knight','frost_mage','frost_guard']:t<900?['ice_knight','frost_mage','frost_guard','ice_berserker','ice_elemental']:['frost_guard','ice_berserker','ice_elemental','frost_mage'];const eliteChance=cMonsterBalance().elite;let kind=pool[Math.floor(Math.random()*pool.length)];if(Math.random()<eliteChance)kind=['frost_guard','ice_berserker','ice_elemental'][Math.floor(Math.random()*3)];const st=JOTUN_STATS[kind],scale=1+elapsed/110;const e={id:enemyId++,x:pt.x,y:pt.y,r:st.r,hp:st.hp*scale,maxHp:st.hp*scale,spd:st.spd,dmg:st.dmg*scale,atkBase:st.dmg,atkScale:scale,type:kind==='frost_guard'||kind==='ice_berserker'||kind==='ice_elemental'?'brute':kind==='frost_mage'?'shaman':kind==='snow_wolf'?'wisp':'skeleton',jotunKind:kind,hit:0,jotunCooldown:2+Math.random()};enemies.push(kidModeEnemy(cApplyMonsterBalance(e)));}
 function jotunUpdateEnemy(e,dt){if(!e.jotunKind)return;if(e.s3Boss&&!(e.jotunDashTime>0)){s3BossUpdate(e,dt);return;}const kind=e.jotunAI||e.jotunKind;
  if(kind==='ice_berserker'&&e.jotunDashTime>0){
   const step=Math.min(dt,e.jotunDashTime),length=step*370,ang=e.jotunDashAngle;
@@ -2525,7 +2530,7 @@ const S3_STATS={
  m_shadow:{r:23,hp:142,spd:62,dmg:31,ai:'ice_berserker',type:'brute'},
  m_wizard:{r:14,hp:70,spd:40,dmg:14,ai:'m_wizard',type:'shaman'},
  m_elite:{r:23,hp:155,spd:44,dmg:26,ai:'ice_elemental',type:'brute'},
- s3_colossus:{r:37,hp:1485,spd:25,dmg:72,ai:'ice_colossus',type:'mega'}
+ s3_colossus:{r:37,hp:1485,spd:25,dmg:52,ai:'ice_colossus',type:'mega'}
 };
 const S3_NAMES={m_slime:'火焰史萊姆',m_skeleton:'火焰骷髏兵',m_wisp:'火焰鬼火',m_beetle:'火焰甲蟲',m_shadow:'火焰暗影',m_wizard:'火焰巫師',m_elite:'火焰精英',s3_colossus:'火巨人',fire_giant:'火焰巨人',surtr:'炎之巨人·史爾特爾',loki:'詭計之神·洛基',loki_clone:'洛基',giant_ice:'冰巨人',giant_fire:'火巨人',fenrir_soul:'芬里爾之魂'};
 let s3Ready=false;
@@ -2546,7 +2551,7 @@ function s3BurnHud(){let el=document.getElementById('s3BurnHud');const n=(player
 function s3PlayerHurt(amount){if(!player||amount<=0)return;askHelTakeDamage(amount);showPlayerDamageNumber(amount);if(player.hp<=0){if(!tryAnyRevive()){player.hp=0;updateHud();endRun(false);}}}
 function s3InWalk(x,y){return insideWalkZone(x,y);}
 function s3RandPointNear(cx,cy,minD,maxD){for(let i=0;i<30;i++){const a=Math.random()*Math.PI*2,d=minD+Math.random()*(maxD-minD),x=cx+Math.cos(a)*d,y=cy+Math.sin(a)*d;if(s3InWalk(x,y))return{x,y};}return{x:cx,y:cy};}
-function s3MakeEnemy(kind,x,y,extra){const st=S3_STATS[kind];const scale=1+elapsed/110;const e={id:enemyId++,x,y,r:st.r,hp:st.hp*scale,maxHp:st.hp*scale,spd:st.spd,dmg:st.dmg*scale,type:st.type,jotunKind:kind,jotunAI:st.ai,s3Fire:true,hit:0,jotunCooldown:2+Math.random(),name:S3_NAMES[kind],...(extra||{})};return e;}
+function s3MakeEnemy(kind,x,y,extra){const st=S3_STATS[kind];const scale=1+elapsed/110;const e={id:enemyId++,x,y,r:st.r,hp:st.hp*scale,maxHp:st.hp*scale,spd:st.spd,dmg:st.dmg*scale,atkBase:st.dmg,atkScale:scale,type:st.type,jotunKind:kind,jotunAI:st.ai,s3Fire:true,hit:0,jotunCooldown:2+Math.random(),name:S3_NAMES[kind],...(extra||{})};return e;}
 function s3SpawnEnemy(){if(!cCanSpawnMonster())return;const a=cSpawnAngle(),dist=Math.max(W,H)*(.63+Math.random()*.18);const x=Math.max(24,Math.min(world.w-24,player.x+Math.cos(a)*dist)),y=Math.max(24,Math.min(world.h-24,player.y+Math.sin(a)*dist));const pt=insideWalkZone(x,y)?{x,y}:nearestReachableGemPoint(x,y);const t=elapsed;
  let pool=t<180?['m_slime','m_skeleton']:t<540?['m_slime','m_skeleton','m_wisp','m_beetle']:t<900?['m_skeleton','m_wisp','m_beetle','m_wizard','m_shadow']:['m_beetle','m_shadow','m_wizard','m_elite','m_wisp'];
  let kind=pool[Math.floor(Math.random()*pool.length)];if(Math.random()<cMonsterBalance().elite)kind=['m_beetle','m_shadow','m_elite'][Math.floor(Math.random()*3)];
@@ -2623,6 +2628,44 @@ function s3DrawScreen(){if(jotunStage!==3||s3EdgeFire<=0)return;const k=Math.min
 
 const MONSTER_MAX_ON_FIELD=150; // Legacy constant retained for older references; C V69-3 uses dynamic caps.
 // V1.4.79：雙關卡消耗戰（依玩家上傳 V1.4.78 源檔修改）
+
+/* ───── V1.4.96：困難／煉獄改為首領戰模式 ───── */
+const BM={on:false,inferno:false,picks:0,limit:300,queue:[],mobClock:0,warned:false};
+function bmNoEnergy(){return false;} /* V1.4.97：煉獄保留原本能量來源 */
+function bmBasicCharge(){if(BM.on&&BM.inferno&&player)player.ultCharge=Math.min(100,(player.ultCharge||0)+.2);}
+function cArmorMul(){return 1-Math.min(.6,Math.max(0,(player&&player.armor)||0)*.02);}
+function bmSetup(){BM.on=difficultyMode==='hard'||difficultyMode==='inferno';BM.inferno=difficultyMode==='inferno';BM.queue=[];BM.mobClock=0;BM.warned=false;if(!BM.on)return;
+ BM.picks=BM.inferno?10:15;BM.limit=(jotunStage===3?600:300)+(BM.inferno?120:0);
+ const hpK=BM.inferno?2:1.5,atkK=BM.inferno?1.3:1.2,weak=BM.inferno?.5:.3;
+ if(jotunStage===1)BM.queue=[{k:'fenrir',hp:hpK,atk:atkK}];
+ else if(jotunStage===2)BM.queue=[{k:'king',hp:hpK,atk:atkK}];
+ else BM.queue=[{k:'fenrir',hp:weak,atk:weak,weak:1},{k:'king',hp:weak,atk:weak,weak:1},{k:'surtr',hp:weak,atk:weak,weak:1},{k:'loki',hp:hpK,atk:atkK}];
+ finalBossSpawned=true;cHordePending=0;if(player)player.b3FirstChoiceDone=true; /* V1.4.97：首領戰第一個技能也隨機 */
+ if(typeof s3Clock==='object'){s3Clock.boss6=s3Clock.loki11=s3Clock.surtr16=true;}
+}
+function bmOpenPick(){if(!BM.on||BM.picks<=0)return false;paused=true;chestSkillMode=false;
+ const tot=BM.inferno?10:15,n=tot-BM.picks+1;
+ drawSkillChoices(false);
+ $('skillScreen').querySelector('.eyebrow').textContent=(BM.inferno?'INFERNO':'HARD')+' · 開場技能 '+n+' / '+tot;
+ $('skillScreen').querySelector('h2').textContent='首領戰準備：選擇技能（'+n+' / '+tot+'）';
+ $('skillScreen').querySelector('p').textContent='首領戰沒有經驗值，開場連續三選一共 '+tot+' 次；選到一種元素後，其他元素不再出現。每場可免費刷新 3 次。限時 '+Math.round(BM.limit/60)+' 分鐘。';
+ show('skillScreen');return true;}
+function bmAfterPick(){if(!BM.on||BM.picks<=0)return false;BM.picks--;if(BM.picks>0){bmOpenPick();return true;}toast('⚔️ 準備完成！限時 '+Math.round(BM.limit/60)+' 分鐘');BM.mobClock=0;setTimeout(()=>{if(running&&BM.on)bmNext(true);},600);return false;}
+function bmApply(e,q){if(!e)return;e.hp*=q.hp;e.maxHp*=q.hp;e.dmg*=q.atk;e.bmBoss=true;if(q.weak)e.name=(e.name||'')+'（弱化）';}
+function bmNext(first){const q=BM.queue.shift();if(!q)return false;const before=enemies.length;const pt=(typeof s3RandPointNear==='function'&&jotunStage===3)?s3RandPointNear(player.x,player.y,300,380):null;
+ if(q.k==='fenrir'){const a=Math.random()*Math.PI*2,dist=Math.max(W,H)*.6;const x=pt?pt.x:Math.max(35,Math.min(world.w-35,player.x+Math.cos(a)*dist)),y=pt?pt.y:Math.max(35,Math.min(world.h-35,player.y+Math.sin(a)*dist));
+  enemies.push({id:enemyId++,x,y,r:46,hp:750000,maxHp:750000,spd:68,dmg:500,type:'finalBoss',name:'滅世魔狼·芬里爾',hit:0,attackClock:0,fenrirPhase:1,fenrirClock:0,fenrirDashCD:6,fenrirRoarCD:10,fenrirMeteorCD:12,fenrirDash:null,fenrirRoar:null,fenrirMeteors:[],fenrirEnraged:false,defense:1});
+  BowAudio.setFenrirBattle(true);resetFenrirCracks();try{showFenrirEntrance()}catch(_){}toast('⚠️ 滅世魔狼·芬里爾降臨！'+(q.weak?'（弱化）':''));}
+ else if(q.k==='king'){jotunSpawnBoss('king');}
+ else if(q.k==='surtr'){s3SpawnBoss('surtr',pt?{at:pt}:undefined);}
+ else if(q.k==='loki'){const L=s3SpawnBoss('loki',{quiet:true,at:pt||undefined});toast('⚠️ 諸神黃昏！詭計之神·洛基親自降臨！');try{BowAudio.sfx('roar')}catch(_){}s3TakeBackLoki(L);if(typeof s3Clock==='object')s3Clock.decoy=10;}
+ for(let i=before;i<enemies.length;i++)bmApply(enemies[i],q);
+ if(!first&&BM.queue.length>=0)toast('下一位首領：'+(enemies[enemies.length-1]&&enemies[enemies.length-1].name||''));
+ return true;}
+function bmSpawnMobs(n){const sv=elapsed,sf=finalBossSpawned;elapsed=300;finalBossSpawned=false;const before=enemies.length;try{for(let i=0;i<n;i++)spawnEnemy();}catch(_){}elapsed=sv;finalBossSpawned=sf;for(let i=before;i<enemies.length;i++){enemies[i].bmMob=true;}}
+function bmTick(dt){if(!BM.on||!player)return;if(BM.picks>0){if(!paused){BM.stuck=(BM.stuck||0)+dt;if(BM.stuck>1.5){BM.stuck=0;BM.picks=1;bmAfterPick();}}return;}BM.mobClock+=dt;const iv=BM.inferno?30:60,n=BM.inferno?10:5;if(BM.mobClock>=iv){BM.mobClock=0;bmSpawnMobs(n);}
+ if(!BM.warned&&elapsed>=BM.limit-60){BM.warned=true;toast('⏳ 剩下 1 分鐘！');}}
+
 function cAttritionCurve(t,points){for(let i=1;i<points.length;i++){if(t<=points[i][0]){const [a,va]=points[i-1],[b,vb]=points[i];return va+(vb-va)*(t-a)/(b-a)}}return points[points.length-1][1]}
 function cMonsterCap(t=elapsed){if(jotunStage===3){if(t>=S3_FINAL_AT)return 1;return Math.max(12,Math.round(cAttritionCurve(t,[[0,35],[180,32],[300,28],[480,24],[600,21],[780,18],[900,16],[1080,14],[1200,12],[1320,12]])))}if(jotunStage===2){if(t>=1080)return 1;return Math.max(12,Math.round(cAttritionCurve(t,[[0,35],[180,32],[300,28],[480,24],[600,20],[780,16],[900,14],[1020,12],[1080,12]])))}if(t>=780)return 1;return Math.max(14,Math.round(cAttritionCurve(t,[[0,35],[180,31],[300,27],[480,22],[600,18],[720,15],[780,14]])))}
 function cAttritionHp(t=elapsed){if(jotunStage===3)return cAttritionCurve(t,[[0,1],[180,1.5],[300,2],[480,3],[600,4],[780,5],[900,6],[1080,7],[1320,8]]);return cAttritionCurve(t,jotunStage===2?[[0,1],[180,1.5],[300,2],[480,3],[600,4],[780,5],[900,6],[1020,7],[1080,7]]:[[0,1],[180,1.5],[300,2],[480,3],[600,4],[720,6],[780,7]])} // V1.4.82：上限 ×10→×7
@@ -2630,7 +2673,7 @@ let cUltEnergyLockUntil=-1;
 function cUltEnergyLocked(){return elapsed<cUltEnergyLockUntil}
 
 function cMonsterBalance(t=elapsed){return t<180?{elite:.02,hp:1,atk:1}:t<360?{elite:.05,hp:1.15,atk:1.10}:t<540?{elite:.10,hp:1.35,atk:1.25}:t<660?{elite:.15,hp:1.60,atk:1.45}:{elite:.20,hp:1.90,atk:1.65};}
-function cApplyMonsterBalance(e){if(!e||e.type==='finalBoss')return e;const b=cMonsterBalance();const boost=e.type==='boss'?1:cAttritionHp();e.hp*=b.hp*boost;e.maxHp*=b.hp*boost;e.dmg*=b.atk;return e;}
+function cApplyMonsterBalance(e){if(!e||e.type==='finalBoss')return e;const b=cMonsterBalance();const boost=e.type==='boss'?1:cAttritionHp();e.hp*=b.hp*boost;e.maxHp*=b.hp*boost;if(e.atkScale!=null)e.dmg=e.atkBase*(1+(e.atkScale*b.atk-1)/3);else e.dmg*=b.atk;return e;} /* V1.4.96：攻擊成長只保留三分之一，生命不變 */
 function cCanSpawnMonster(){return !finalBossSpawned&&elapsed<(jotunStage===3?S3_FINAL_AT:jotunStage===2?1080:780)&&enemies.length<cMonsterCap();}
 let cHordePending=0,cHordeClock=0;
 function cEnforceMonsterCap(){if(finalBossSpawned)return;const cap=cMonsterCap();if(enemies.length<=cap)return;
@@ -2646,7 +2689,7 @@ function cEnforceMonsterCap(){if(finalBossSpawned)return;const cap=cMonsterCap()
 
 function cSpawnHordeUnit(){if(jotunStage===3){if(!cCanSpawnMonster())return false;s3SpawnEnemy();return true;}if(jotunStage===2){if(!cCanSpawnMonster())return false;jotunSpawnEnemy();return true;}if(!cCanSpawnMonster())return false;
  const a=Math.random()*Math.PI*2,dist=Math.max(W,H)*(.6+Math.random()*.35),x=Math.max(20,Math.min(world.w-20,player.x+Math.cos(a)*dist)),y=Math.max(20,Math.min(world.h-20,player.y+Math.sin(a)*dist)),scale=1+elapsed/100;
- const e={id:enemyId++,x,y,r:12,hp:40*scale,maxHp:40*scale,spd:80+Math.min(55,elapsed/15),dmg:12+Math.floor(elapsed/50),type:'horde',hit:0};
+ const e={id:enemyId++,x,y,r:12,hp:40*scale,maxHp:40*scale,spd:80+Math.min(55,elapsed/15),dmg:12+Math.floor(elapsed/50),atkBase:12,atkScale:(12+Math.floor(elapsed/50))/12,type:'horde',hit:0};
  enemies.push(kidModeEnemy(cApplyMonsterBalance(e)));return true;
 }
 function cUpdateHorde(dt){if(!cHordePending||finalBossSpawned)return;cHordeClock+=dt;
@@ -2674,7 +2717,7 @@ function spawnFinalBoss(){
 // C monster module: Fenrir encounter logic. Visual presentation is delegated to D.
 function fenrirDealDamage(amount,x,y,r){
  if(Math.hypot(player.x-x,(player.y-10)-y)>r+player.r||player.invuln>0)return;if(TR)TR.bossHit=true;
- const actualDamage=Math.max(1,Math.round(amount*(kidModeActive?.3:1)-player.armor));askHelTakeDamage(actualDamage);showPlayerDamageNumber(actualDamage);
+ const actualDamage=Math.max(1,Math.round(amount*(kidModeActive?.3:1)*cArmorMul()));askHelTakeDamage(actualDamage);showPlayerDamageNumber(actualDamage);
  player.invuln=.55;burst(player.x,player.y,'#ff7777',8);
  if(player.hp<=0){if(!tryAnyRevive()){player.hp=0;updateHud();endRun(false)}}
 }
@@ -2747,7 +2790,7 @@ function summonFenrirForTest(){
 }
 $('fenrirTestBtn').addEventListener('click',function(event){event.preventDefault();event.stopPropagation();summonFenrirForTest();});
 function triggerSpecialEvent(){
- if(jotunStage===3){specialEventIndex++;if(specialEventIndex%2===1){if(enemies.length<cMonsterCap()+2){const p=s3RandPointNear(player.x,player.y,Math.max(W,H)*.45,Math.max(W,H)*.6);const e=s3MakeEnemy('m_elite',p.x,p.y,{type:'boss',r:30,name:'火焰精英首領'});const hp=2500*(1+elapsed/300);e.hp=hp;e.maxHp=hp;e.dmg*=1.6;enemies.push(kidModeEnemy(e));toast('🔥 火焰精英首領出現！');}}else cHordePending=Math.min(40,cHordePending+18);return;}
+ if(jotunStage===3){specialEventIndex++;if(specialEventIndex%2===1){if(enemies.length<cMonsterCap()+2){const p=s3RandPointNear(player.x,player.y,Math.max(W,H)*.45,Math.max(W,H)*.6);const e=s3MakeEnemy('m_elite',p.x,p.y,{type:'boss',r:30,name:'火焰精英首領'});const hp=2500*(1+elapsed/300);e.hp=hp;e.maxHp=hp;e.dmg=e.atkBase*(1+(e.atkScale*cMonsterBalance().atk-1)/3)*1.6;enemies.push(kidModeEnemy(e));toast('🔥 火焰精英首領出現！');}}else cHordePending=Math.min(40,cHordePending+18);return;}
  if(jotunStage===2){specialEventIndex++;if(specialEventIndex%2===0)cHordePending=Math.min(40,cHordePending+18);return;}
  specialEventIndex++;
  const eventMultiplier=Math.min(8,Math.pow(2,Math.floor(elapsed/300)));
@@ -2756,7 +2799,7 @@ function triggerSpecialEvent(){
   for(let bi=0;bi<bossCount;bi++){
    const a=Math.random()*Math.PI*2,dist=Math.max(W,H)*(.65+Math.random()*.22),fixedHp=bossBaseHPAt(elapsed),hp=fixedHp??(Math.max(900,player.atk*45)*(1+elapsed/150));
    const x=Math.max(35,Math.min(world.w-35,player.x+Math.cos(a)*dist)),y=Math.max(35,Math.min(world.h-35,player.y+Math.sin(a)*dist));
-   const bossE=cApplyMonsterBalance({id:enemyId++,x,y,r:34,hp,maxHp:hp,spd:38+Math.min(30,elapsed/35),dmg:26+Math.floor(elapsed/40),type:'boss',hit:0});
+   const bossE=cApplyMonsterBalance({id:enemyId++,x,y,r:34,hp,maxHp:hp,spd:38+Math.min(30,elapsed/35),dmg:26+Math.floor(elapsed/40),atkBase:26,atkScale:(26+Math.floor(elapsed/40))/26,type:'boss',hit:0});
    if(fixedHp!=null){bossE.hp=fixedHp;bossE.maxHp=fixedHp;}
    bossE.bossEvent=specialEventIndex; // V1.4.25：7 分後的 Boss 血量不再乘時間倍率（攻擊倍率保留）
    enemies.push(kidModeEnemy(bossE));
@@ -2810,7 +2853,7 @@ function drawSkadiFrostRainVfx(){
   if(progress>.70){ctx.save();ctx.globalAlpha=(progress-.70)/.30*.65;ctx.strokeStyle='#9fefff';ctx.lineWidth=1.5;ctx.shadowColor='#6fdcff';ctx.shadowBlur=12;ctx.beginPath();ctx.ellipse(f.x,f.y,7+progress*7,3+progress*4,0,0,Math.PI*2);ctx.stroke();ctx.restore();}
  }
 }
-function update(dt,clockDt=dt){askBlessUpdate(dt);jotunTick(dt);updateFenrirCracks(dt);updateWeaponFx(dt);updatePhoenixFireFields(dt);for(let i=skadiFrostRainVfx.length-1;i>=0;i--){skadiFrostRainVfx[i].life-=dt;if(skadiFrostRainVfx[i].life<=0)skadiFrostRainVfx.splice(i,1);}if(elapsed+clockDt>=(jotunStage===3?S3_LIMIT:jotunStage===2?1200:900)){elapsed=jotunStage===3?S3_LIMIT:jotunStage===2?1200:900;updateHud();endRun(false);return;}elapsed+=clockDt;if(elapsed>=(jotunStage===3?S3_FINAL_AT:jotunStage===2?1080:780)&&!finalBossSpawned)spawnFinalBoss();if(jotunFreezeCheck(dt)){updateHud();return;}while(rapidShotQueue.length&&rapidShotQueue[0].at<=elapsed){const shot=rapidShotQueue.shift();shot.fire()}spawnClock+=dt;attackClock-=dt;
+function update(dt,clockDt=dt){askBlessUpdate(dt);bmTick(dt);jotunTick(dt);updateFenrirCracks(dt);updateWeaponFx(dt);updatePhoenixFireFields(dt);for(let i=skadiFrostRainVfx.length-1;i>=0;i--){skadiFrostRainVfx[i].life-=dt;if(skadiFrostRainVfx[i].life<=0)skadiFrostRainVfx.splice(i,1);}if(elapsed+clockDt>=(BM.on?BM.limit:jotunStage===3?S3_LIMIT:jotunStage===2?1200:900)){elapsed=BM.on?BM.limit:jotunStage===3?S3_LIMIT:jotunStage===2?1200:900;updateHud();toast(BM.on?'⏳ 時間到，挑戰失敗':'');endRun(false);return;}elapsed+=clockDt;if(elapsed>=(jotunStage===3?S3_FINAL_AT:jotunStage===2?1080:780)&&!finalBossSpawned)spawnFinalBoss();if(jotunFreezeCheck(dt)){updateHud();return;}while(rapidShotQueue.length&&rapidShotQueue[0].at<=elapsed){const shot=rapidShotQueue.shift();shot.fire()}spawnClock+=dt;attackClock-=dt;
 if(aAthenaHero()&&player.athenaUltTimer>0){
  const active=Math.min(dt,player.athenaUltTimer);player.athenaUltTimer=Math.max(0,player.athenaUltTimer-dt);
  player.athenaUltHealClock+=active;
@@ -2921,12 +2964,12 @@ if(selectedHero.id==='guardian'){ // V1.4.28 森林之力：滿血時，每秒�
    player.guardianPulse={timer:.5,max:.5,radius:0,maxR:SATYR_PULSE_RADIUS};burst(player.x,player.y,'#86efac',18);rewardDefeatedEnemies();}} // V1.4.85：森林衝擊半徑 160→480，光影對齊實際半徑
 }
 else if(selectedHero.id==='flame'){/* 獅王之力取代舊燃燒天賦 */}
-else if(selectedHero.id==='athenaSSR'){player.ultCharge=Math.min(100,(player.ultCharge||0)+(trAw>=1?1:.8)*dt);}
-else if(selectedHero.id==='moon'){player.ultCharge=Math.min(100,(player.ultCharge||0)+1.1*dt);
+else if(selectedHero.id==='athenaSSR'){if(!bmNoEnergy())player.ultCharge=Math.min(100,(player.ultCharge||0)+(trAw>=1?1:.8)*dt);}
+else if(selectedHero.id==='moon'){if(!bmNoEnergy())player.ultCharge=Math.min(100,(player.ultCharge||0)+1.1*dt);
  player.moonGuardCd=Math.max(0,(player.moonGuardCd||0)-dt);
  if(player.hp>0&&player.hp<player.maxHp*.35&&player.moonGuardCd<=0){player.moonGuardCd=(trAw>=1?30:35);player.hp=Math.min(player.maxHp,player.hp+player.maxHp*(trAw>=3?.30:.20));if(TR)TR.moonGuard++;player.invuln=Math.max(player.invuln||0,1.2);burst(player.x,player.y,'#7dd3fc',26);toast('月華護體！回復 '+(trAw>=3?30:20)+'% 生命並短暫無敵');BowAudio.sfx('guard');}
 }
-else if(selectedHero.id==='dragon'){player.ultCharge=Math.min(100,(player.ultCharge||0)+1.0*dt);}
+else if(selectedHero.id==='dragon'){if(!bmNoEnergy())player.ultCharge=Math.min(100,(player.ultCharge||0)+1.0*dt);}
 
 let mx=0,my=0;if(keys.ArrowLeft||keys.a||keys.A)mx--;if(keys.ArrowRight||keys.d||keys.D)mx++;if(keys.ArrowUp||keys.w||keys.W)my--;if(keys.ArrowDown||keys.s||keys.S)my++;if(stick.active){mx=stick.x;my=stick.y}let ml=Math.hypot(mx,my);if(ml>1){mx/=ml;my/=ml}/* V55 空氣牆：平滑道路邊界＋細分移動步進，避免高速移動穿牆或邊角卡住。 */
 // V55：將單次位移拆成小步，沿邊界滑動；先測試完整向量，再分軸移動，降低牆邊抖動與卡角。
@@ -3023,19 +3066,19 @@ for(const e of enemies){
  }
  if(e.hp<=0)countEliteKill(e);
  if(askTarget!==player&&askTarget.hp>0&&Math.hypot(e.x-askTarget.x,e.y-(askTarget.y-10))<cMonsterHitRadius(e)+player.r){
-  if((e.askShadowHitAt||0)<=elapsed){askTarget.hp-=Math.max(1,e.dmg-player.armor);e.askShadowHitAt=elapsed+.55;if(askTarget.hp<=0)burst(askTarget.x,askTarget.y,'#4ade80',12);}
+  if((e.askShadowHitAt||0)<=elapsed){askTarget.hp-=Math.max(1,e.dmg*cArmorMul());e.askShadowHitAt=elapsed+.55;if(askTarget.hp<=0)burst(askTarget.x,askTarget.y,'#4ade80',12);}
  }
  if(TR&&e.hp>0&&elapsed<TR.guardUntil&&player.invuln>0&&(e.trBlk||0)<=elapsed&&Math.hypot(e.x-player.x,e.y-(player.y-10))<cMonsterHitRadius(e)+player.r){e.trBlk=elapsed+.55;TR.guardBlocks++;if(TR.guardBlocks>=10)trFlag('guardian','c2');}
- if(e.hp>0&&Math.hypot(e.x-player.x,e.y-(player.y-10))<cMonsterHitRadius(e)+player.r&&player.invuln<=0){if(e.s3Fire)s3AddBurn(1);if(TR&&['boss','megaBoss','finalBoss'].includes(e.type))TR.bossHit=true;const actualDamage=Math.max(1,e.dmg*(kidModeActive?.3:1)-player.armor);askHelTakeDamage(actualDamage);showPlayerDamageNumber(actualDamage);player.invuln=.55;burst(player.x,player.y,'#ff7777',5);if(player.hp<=0){if(tryAnyRevive()){updateHud();continue}player.hp=0;updateHud();endRun();return}}}
+ if(e.hp>0&&Math.hypot(e.x-player.x,e.y-(player.y-10))<cMonsterHitRadius(e)+player.r&&player.invuln<=0){if(e.s3Fire)s3AddBurn(1);if(TR&&['boss','megaBoss','finalBoss'].includes(e.type))TR.bossHit=true;const actualDamage=Math.max(1,e.dmg*(kidModeActive?.3:1)*cArmorMul());askHelTakeDamage(actualDamage);showPlayerDamageNumber(actualDamage);player.invuln=.55;burst(player.x,player.y,'#ff7777',5);if(player.hp<=0){if(tryAnyRevive()){updateHud();continue}player.hp=0;updateHud();endRun();return}}}
 for(let i=hostileShots.length-1;i>=0;i--){
  const q=hostileShots[i];if(!q.moonIn&&(q.mk||1)<1)q.mk=Math.min(1,q.mk+dt*1.3);q.moonIn=false;const qk=q.mk||1;q.x+=q.vx*dt*qk;q.y+=q.vy*dt*qk;q.life-=dt*qk;q.spin=(q.spin||0)+dt*8*qk;
  if(q.life<=0||q.x<0||q.y<0||q.x>world.w||q.y>world.h){hostileShots.splice(i,1);continue}
  if(askBlessActive('loki')&&player.askShadows){
-  let absorbed=false;for(const sh of player.askShadows){if(sh.hp>0&&Math.hypot(q.x-sh.x,q.y-(sh.y-10))<q.r+player.r){sh.hp-=Math.max(1,q.damage-player.armor);absorbed=true;break;}}
+  let absorbed=false;for(const sh of player.askShadows){if(sh.hp>0&&Math.hypot(q.x-sh.x,q.y-(sh.y-10))<q.r+player.r){sh.hp-=Math.max(1,q.damage*cArmorMul());absorbed=true;break;}}
   if(absorbed){hostileShots.splice(i,1);continue;}
  }
  if(Math.hypot(q.x-player.x,q.y-(player.y-10))<q.r+player.r&&player.invuln<=0){
-  const dealt=Math.max(1,Math.round(q.damage*(kidModeActive?.3:1)-player.armor));askHelTakeDamage(dealt);player.invuln=.55;if(TR&&q.type==='boss')TR.bossHit=true;
+  const dealt=Math.max(1,Math.round(q.damage*(kidModeActive?.3:1)*cArmorMul()));askHelTakeDamage(dealt);player.invuln=.55;if(TR&&q.type==='boss')TR.bossHit=true;
   showPlayerDamageNumber(dealt);if(q.type==='s3_fire')s3AddBurn(1);
   burst(player.x,player.y,q.type==='jotun_ice'?'#91e8ff':q.type==='boss'?'#f0abfc':'#ff7777',q.type==='boss'?20:7);
   if(q.type==='boss'){for(let k=0;k<8;k++){const a=k*Math.PI/4;particles.push({x:player.x,y:player.y,vx:Math.cos(a)*120,vy:Math.sin(a)*120,life:.5,color:'#e879f9'})}}
@@ -3043,7 +3086,7 @@ for(let i=hostileShots.length-1;i>=0;i--){
   if(player.hp<=0){if(tryAnyRevive()){updateHud();continue}player.hp=0;updateHud();endRun();return}
  }
 }
-for(let i=bullets.length-1;i>=0;i--){const b=bullets[i];b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;let remove=b.life<=0;for(const e of enemies){if(b.hit.includes(e.id))continue;if(Math.hypot(e.x-b.x,e.y-b.y)<cMonsterHitRadius(e)+b.r){const dealt=(e.s3Fire&&(b.ice||selectedHero.id==='skadiN')?1.2:1)*b.damage*(selectedHero.id==='skadiN'&&((e.iceSlowTimer||0)>0||(e.frozenTimer||0)>0||(e.skadiChill||0)>0)?(trAw>=3?1.4:1.3):1);if(b.askShadowShot)e.askShadowHit=true;dealEnemyDamage(e,dealt);e.askShadowHit=false;if(selectedHero.id==='skadiN'&&!b.ice){e.skadiChill=Math.max(e.skadiChill||0,SKADI_CHILL_DUR+(trAw>=1?.5:0));if(!['boss','megaBoss','finalBoss'].includes(e.type)){e.iceSlow=Math.max(e.iceSlow||0,SKADI_BASE_SLOW);e.iceSlowTimer=Math.max(e.iceSlowTimer||0,SKADI_CHILL_DUR+(trAw>=1?.5:0));}}e.hit=.1;showDamageNumber(e.x+(Math.random()-.5)*14,e.y-e.r-(Math.random()*8),dealt,b.crit);b.hit.push(e.id);burst(b.x,b.y,b.crit?'#ffe082':b.ice?'#60dfff':b.lightning?'#facc15':'#e5f3ff',3);rsfxBulletHit(e,b);
+for(let i=bullets.length-1;i>=0;i--){const b=bullets[i];b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;let remove=b.life<=0;for(const e of enemies){if(b.hit.includes(e.id))continue;if(Math.hypot(e.x-b.x,e.y-b.y)<cMonsterHitRadius(e)+b.r){bmBasicCharge();const dealt=(e.s3Fire&&(b.ice||selectedHero.id==='skadiN')?1.2:1)*b.damage*(selectedHero.id==='skadiN'&&((e.iceSlowTimer||0)>0||(e.frozenTimer||0)>0||(e.skadiChill||0)>0)?(trAw>=3?1.4:1.3):1);if(b.askShadowShot)e.askShadowHit=true;dealEnemyDamage(e,dealt);e.askShadowHit=false;if(selectedHero.id==='skadiN'&&!b.ice){e.skadiChill=Math.max(e.skadiChill||0,SKADI_CHILL_DUR+(trAw>=1?.5:0));if(!['boss','megaBoss','finalBoss'].includes(e.type)){e.iceSlow=Math.max(e.iceSlow||0,SKADI_BASE_SLOW);e.iceSlowTimer=Math.max(e.iceSlowTimer||0,SKADI_CHILL_DUR+(trAw>=1?.5:0));}}e.hit=.1;showDamageNumber(e.x+(Math.random()-.5)*14,e.y-e.r-(Math.random()*8),dealt,b.crit);b.hit.push(e.id);burst(b.x,b.y,b.crit?'#ffe082':b.ice?'#60dfff':b.lightning?'#facc15':'#e5f3ff',3);rsfxBulletHit(e,b);
 if(b.ice){
  const lv=Math.max(1,b.iceLevel||player.iceLevel||1);
  if(e.frozenTimer>0)e.iceShatterMult=Math.min(15,(e.iceShatterMult||5)+.2);
