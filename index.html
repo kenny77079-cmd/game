@@ -37,7 +37,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="神域之門">
 <meta name="mobile-web-app-capable" content="yes">
-<title>神域之門 V1.4.97｜首領戰能量與開場技能調整</title>
+<title>神域之門 V1.4.98｜首領戰刷新 10 次與剩餘獎勵</title>
 <!-- V46：修正 V41 操作區按鈕間意外輸出的字面 \n 字元；保留 V41 技能聯動及 V40 時間排版。 -->
 <style>
 :root{--bg:#101827;--panel:#182438;--gold:#ffd166;--mint:#74f2ce;--red:#ff6b6b;--text:#f5f7fb;--muted:#aebbd0}
@@ -431,7 +431,7 @@ body:not(.battle-active) #unifiedBattleHud{display:none!important}
    <div id="realmTrialPicker" aria-label="新玩法入口"><div class="realm-mode-caption">新玩法</div><button type="button" id="realmModeTrial">⚡ 諸神試煉</button></div>
    <div class="v709-overline">REALM GATE · THE LAST DEFENSE</div>
    <h1>神域之門</h1>
-   <div class="v709-subtitle">最後防線 <span>V1.4.97</span></div>
+   <div class="v709-subtitle">最後防線 <span>V1.4.98</span></div>
    <button class="btn secondary" id="sfxToggleMain" type="button">🔊 音效開</button>
   </header>
   <section class="hero-select-wrap v709-showcase" aria-label="出戰英雄">
@@ -1123,7 +1123,7 @@ function tryAnyRevive0(){
  if(player&&player.reviveCharges>0){player.reviveCharges--;BowAudio.sfx('revive');updateHud();player.hp=Math.max(1,Math.ceil(player.maxHp*(selectedHero&&selectedHero.id==='rookie'?.8:.5)));/* V1.4.95：阿斯克 80%、其他 50% */player.invuln=2.0;burst(player.x,player.y,'#f9a8d4',24);for(let i=0;i<20;i++){const a=i*Math.PI*2/20;particles.push({x:player.x,y:player.y,vx:Math.cos(a)*170,vy:Math.sin(a)*170,life:.7,color:i%2?'#f9a8d4':'#fff1f2'})}askBlessRevived();toast('💖 死者甦醒！恢復 '+(selectedHero&&selectedHero.id==='rookie'?80:50)+'% 生命，剩餘 '+player.reviveCharges+' 次');return true;}
  return tryHeroRevive();
 }
-function endRun(victory=false){if(!running)return;try{trOnRunEnd(victory)}catch(_e){console.warn('trial',_e)}if(victory){addRunReward(jotunStage===3?2250:jotunStage===2?1500:1000);if(jotunStage===1){save.jotunUnlocked=true;}if(jotunStage===2){save.jotun3Unlocked=true;}}running=false;paused=false;screen='over';$('fenrirTestBtn').style.display='none';resetStick();bankRunCoins();save.totalKills=(save.totalKills||0)+(player.kills||0);save.best=Math.max(save.best||0,elapsed);saveGame();$('endTime').textContent=fmtTime(elapsed);$('endKills').textContent=player.kills||0;$('endCoins').textContent=Math.ceil(coinTenth(runCoins));$('resultSummary').textContent=victory?`${selectedHero.name} ${finalBossSpawned?(jotunStage===3?'擊敗詭計之神·洛基，通關！':jotunStage===2?'擊敗霜巨人之王·索列姆，通關！':'擊敗最終 Boss 芬里爾，通關！'):'成功完成挑戰！'}通關獎勵已計入本局上限 3,500 金幣！本局結餘 ${Math.ceil(coinTenth(runCoins))} 金幣。`:`${selectedHero.name} 存活了 ${fmtTime(elapsed)}，獲得 ${Math.ceil(coinTenth(runCoins))} 金幣。`;show('gameOverScreen')}
+function endRun(victory=false){if(!running)return;try{trOnRunEnd(victory)}catch(_e){console.warn('trial',_e)}let bmRefreshBonus=0;if(victory&&BM.on&&player){bmRefreshBonus=Math.max(0,player.refreshLeft||0)*200;if(bmRefreshBonus)runCoins=coinTenth(runCoins+bmRefreshBonus);}if(victory){addRunReward(jotunStage===3?2250:jotunStage===2?1500:1000);if(jotunStage===1){save.jotunUnlocked=true;}if(jotunStage===2){save.jotun3Unlocked=true;}}running=false;paused=false;screen='over';$('fenrirTestBtn').style.display='none';resetStick();bankRunCoins();save.totalKills=(save.totalKills||0)+(player.kills||0);save.best=Math.max(save.best||0,elapsed);saveGame();$('endTime').textContent=fmtTime(elapsed);$('endKills').textContent=player.kills||0;$('endCoins').textContent=Math.ceil(coinTenth(runCoins));$('resultSummary').textContent=victory?`${selectedHero.name} ${finalBossSpawned?(jotunStage===3?'擊敗詭計之神·洛基，通關！':jotunStage===2?'擊敗霜巨人之王·索列姆，通關！':'擊敗最終 Boss 芬里爾，通關！'):'成功完成挑戰！'}通關獎勵已計入本局上限 3,500 金幣！${bmRefreshBonus?'未用刷新 '+(bmRefreshBonus/200)+' 次，額外獎勵 '+bmRefreshBonus+' 金幣！':''}本局結餘 ${Math.ceil(coinTenth(runCoins))} 金幣。`:`${selectedHero.name} 存活了 ${fmtTime(elapsed)}，獲得 ${Math.ceil(coinTenth(runCoins))} 金幣。`;show('gameOverScreen')}
 const SKILL_LEVEL_CAPS={power:10,rapid:5,multi:5,pierce:5,heart:10,armor:10,critical:5,fire:5,ice:5,lightning:5,regen:10,orb:5,rapidShot:1,revive:10};
 function skillLevelCap(id){return SKILL_LEVEL_CAPS[id]||20}
 const B3_ELEMENT_IDS=['lightning','fire','ice'];
@@ -1220,7 +1220,7 @@ function drawSkillChoices(isChest=false){
   $('skillChoices').appendChild(b);
  });
  $('skillRefreshRow').classList.toggle('hidden',firstRoute);
- {const rb=$('skillRefreshBtn'),left=player?(player.refreshLeft??3):3;rb.textContent='🔄 刷新技能（剩 '+left+'/3）';rb.disabled=left<=0;rb.style.opacity=left<=0?.45:'';}
+ {const rb=$('skillRefreshBtn'),left=player?(player.refreshLeft??3):3;rb.textContent='🔄 刷新技能（剩 '+left+'/'+((player&&player.refreshMax)||3)+'）';rb.disabled=left<=0;rb.style.opacity=left<=0?.45:'';}
 }
 function levelUp(){
  if(player.level>=251){player.level=251;player.xp=0;toast('角色等級已達上限 Lv.251');updateHud();return;}
@@ -2640,7 +2640,7 @@ function bmSetup(){BM.on=difficultyMode==='hard'||difficultyMode==='inferno';BM.
  if(jotunStage===1)BM.queue=[{k:'fenrir',hp:hpK,atk:atkK}];
  else if(jotunStage===2)BM.queue=[{k:'king',hp:hpK,atk:atkK}];
  else BM.queue=[{k:'fenrir',hp:weak,atk:weak,weak:1},{k:'king',hp:weak,atk:weak,weak:1},{k:'surtr',hp:weak,atk:weak,weak:1},{k:'loki',hp:hpK,atk:atkK}];
- finalBossSpawned=true;cHordePending=0;if(player)player.b3FirstChoiceDone=true; /* V1.4.97：首領戰第一個技能也隨機 */
+ finalBossSpawned=true;cHordePending=0;if(player){player.b3FirstChoiceDone=true;player.refreshLeft=10;player.refreshMax=10;} /* V1.4.98：首領戰刷新 10 次 */ /* V1.4.97：首領戰第一個技能也隨機 */
  if(typeof s3Clock==='object'){s3Clock.boss6=s3Clock.loki11=s3Clock.surtr16=true;}
 }
 function bmOpenPick(){if(!BM.on||BM.picks<=0)return false;paused=true;chestSkillMode=false;
@@ -2648,7 +2648,7 @@ function bmOpenPick(){if(!BM.on||BM.picks<=0)return false;paused=true;chestSkill
  drawSkillChoices(false);
  $('skillScreen').querySelector('.eyebrow').textContent=(BM.inferno?'INFERNO':'HARD')+' · 開場技能 '+n+' / '+tot;
  $('skillScreen').querySelector('h2').textContent='首領戰準備：選擇技能（'+n+' / '+tot+'）';
- $('skillScreen').querySelector('p').textContent='首領戰沒有經驗值，開場連續三選一共 '+tot+' 次；選到一種元素後，其他元素不再出現。每場可免費刷新 3 次。限時 '+Math.round(BM.limit/60)+' 分鐘。';
+ $('skillScreen').querySelector('p').textContent='首領戰沒有經驗值，開場連續三選一共 '+tot+' 次；選到一種元素後，其他元素不再出現。每場可免費刷新 10 次，通關時每剩 1 次獎勵 200 金幣。限時 '+Math.round(BM.limit/60)+' 分鐘。';
  show('skillScreen');return true;}
 function bmAfterPick(){if(!BM.on||BM.picks<=0)return false;BM.picks--;if(BM.picks>0){bmOpenPick();return true;}toast('⚔️ 準備完成！限時 '+Math.round(BM.limit/60)+' 分鐘');BM.mobClock=0;setTimeout(()=>{if(running&&BM.on)bmNext(true);},600);return false;}
 function bmApply(e,q){if(!e)return;e.hp*=q.hp;e.maxHp*=q.hp;e.dmg*=q.atk;e.bmBoss=true;if(q.weak)e.name=(e.name||'')+'（弱化）';}
