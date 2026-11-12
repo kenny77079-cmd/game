@@ -1902,13 +1902,13 @@ function yggRootTick(w,dt){
  rewardDefeatedEnemies();
 }
 /* 煉獄開場禮物：SR 以下免費選一個元素 Lv.5（不佔 10 次） */
-function bmGiftEligible(){return !!(BM.on&&BM.inferno&&player&&!player.infernoGift&&selectedHero&&['N','R','SR'].includes(selectedHero.rarity)&&!aAthenaHero());}
+function bmGiftEligible(){return !!(BM.on&&BM.inferno&&player&&!player.infernoGift&&selectedHero&&(['N','R','SR'].includes(selectedHero.rarity)||aAthenaHero()));}
 function bmOpenGift(){paused=true;chestSkillMode=false;
- const sc=$('skillScreen');sc.querySelector('.eyebrow').textContent='INFERNO · 開場禮物';sc.querySelector('h2').textContent='煉獄禮物：免費選一個元素 Lv.5';sc.querySelector('p').textContent='不佔 10 次技能選擇。選定後鎖定元素路線，再把另外兩樣材料升到 Lv.5 就能合成元素專武。';
+ const sc=$('skillScreen');sc.querySelector('.eyebrow').textContent='INFERNO · 開場禮物';sc.querySelector('h2').textContent='煉獄禮物：免費選一個元素 Lv.5';sc.querySelector('p').textContent=aAthenaHero()?'雅典娜限定（只在煉獄模式）：不佔 10 次技能選擇。選定的元素效果直接附加在長槍命中上（冰凍／燃燒／連鎖閃電）；雅典娜不能合成元素專武。':'不佔 10 次技能選擇。選定後鎖定元素路線，再把另外兩樣材料升到 Lv.5 就能合成元素專武。';
  const box=$('skillChoices');box.innerHTML='';$('skillRefreshRow').classList.add('hidden');
  ['fire','ice','lightning'].forEach(id=>{const sk=SKILLS.find(s=>s.id===id);if(!sk)return;const b=document.createElement('button');b.className='card';b.type='button';
   const w=SUPER_WEAPONS.find(x=>!x.heroOnly&&x.needs.includes(id));
-  b.innerHTML='<div class="icon">'+(window.asgardSkillArt?window.asgardSkillArt(id):sk.icon)+'</div><h3>'+sk.name+' <span style="font-size:11px;color:#fcd34d">直接 Lv.5</span></h3><p>'+sk.desc+'</p>'+(w?'<p style="margin-top:8px;color:#fcd34d;font-size:11px">合成目標：'+w.recipe+' → '+w.name+'</p>':'');
+  b.innerHTML='<div class="icon">'+(window.asgardSkillArt?window.asgardSkillArt(id):sk.icon)+'</div><h3>'+sk.name+' <span style="font-size:11px;color:#fcd34d">直接 Lv.5</span></h3><p>'+sk.desc+'</p>'+(w&&!aAthenaHero()?'<p style="margin-top:8px;color:#fcd34d;font-size:11px">合成目標：'+w.recipe+' → '+w.name+'</p>':'');
   b.onclick=()=>{if(player.infernoGift)return;player.infernoGift=id;player.elementRoute=id;for(let i=0;i<5;i++){applySkillSafe(sk);player.skills.push(id);}try{b3SyncOrbElement()}catch(_){}autoFuseReadyWeapons();updateHud();toast('🔥 煉獄禮物：'+sk.name+' Lv.5');bmOpenPick();};
   box.appendChild(b);});
  show('skillScreen');return true;}
@@ -2000,6 +2000,13 @@ window.sfxFilePlay=function(ac,out,name,opts,last,def){if(!sfxDecoding)sfxDecode
 +'#startScreen{background:linear-gradient(180deg,rgba(5,9,20,.05),rgba(5,9,20,.35) 40%,rgba(5,9,20,.7)),url('+V126.home.home_lastline_bg+') center top/cover no-repeat!important;background-color:#05090f!important}';
 document.head.appendChild(st);})();
 (function(){const st=document.createElement('style');st.id='home127';st.textContent='html body #startScreen>.panel{background:linear-gradient(180deg,rgba(5,9,20,.15),rgba(5,9,20,.55) 30%,rgba(5,9,20,.82))!important}html body #startScreen .v709-showcase .rpg-stage,html body #startScreen .rpg-stage{background:linear-gradient(180deg,rgba(8,14,28,.25),rgba(8,14,28,.55) 60%,rgba(8,14,28,.85)),url('+V126.home.home_lastline_banner+') center 30%/cover no-repeat!important}';document.head.appendChild(st);})();
+
+/* V1.4.127：煉獄模式雅典娜的開場元素，附加在長槍直接命中 */
+function athElemHit(e,primary){if(!player||!aAthenaHero()||!player.infernoGift||!e)return;const r=player.elementRoute;
+ if(r==='ice'){if(e.hp>0)weaponIceHit(e);}
+ else if(r==='fire'){const n=Math.max(1,Math.round((player.fire||0)/5));addBurnStacks(e,n);e.burnClock=e.burnClock||0;e.burnFlash=.25;}
+ else if(r==='lightning'&&primary){BowAudio.sfx('zap');e.lightningAuraUntil=Math.max(e.lightningAuraUntil||0,elapsed+.42);const lv=Math.min(5,Math.max(1,skillLevel('lightning')||1));const struck=new Set([e.id]);let fx=e.x,fy=e.y,rem=2*lv;
+  while(rem>0){const c=enemies.filter(t=>t.hp>0&&!struck.has(t.id)&&Math.hypot(t.x-fx,t.y-fy)<=243);if(!c.length)break;c.sort((a,b)=>Math.hypot(a.x-fx,a.y-fy)-Math.hypot(b.x-fx,b.y-fy));const t=c[0];struck.add(t.id);const d=player.atk;t.hp-=d;cDamageCharge();t.hit=.16;t.lightningAuraUntil=Math.max(t.lightningAuraUntil||0,elapsed+.42);showDamageNumber(t.x,t.y-t.r-8,d,false);particles.push({x:fx,y:fy,vx:0,vy:0,life:.23,color:'#fde047',lineTo:{x:t.x,y:t.y},lightningBolt:true});fx=t.x;fy=t.y;rem--;}}}
 window.realmUrTest={
  active(){return !!(fenrirPrivateEnabled&&running&&screen==='game'&&player)},
  weapons(){if(!player)return[];return SUPER_WEAPONS.filter(w=>!w.heroOnly||w.heroOnly===selectedHero.id).map(w=>{const own=(player.superWeapons||[]).find(x=>x.id===w.id);return{id:w.id,label:(w.icon||'⚔️')+' '+w.name+(w.heroOnly?'（專武）':'（超武）')+(own?'｜已擁有 Lv.'+(own.level||1):'')}})},
@@ -2545,13 +2552,13 @@ function shoot(){
   for(let i=0;i<count;i++){const e=targets[i%targets.length];
    const crit=Math.random()<player.crit;
    const raw=player.atk*(crit?(player.critDamage||2):1);
-   const dealt=dealEnemyDamage(e,raw,true);e.hit=.12;showDamageNumber(e.x,e.y-e.r,dealt,crit);
+   const dealt=dealEnemyDamage(e,raw,true);e.hit=.12;showDamageNumber(e.x,e.y-e.r,dealt,crit);athElemHit(e,i===0);
    burst(e.x,e.y,'#f8d57b',3);
    for(let j=1;j<=Math.max(0,player.pierce||0)&&j<targets.length;j++){const extra=targets[(i+j)%targets.length];if(extra===e||extra.hp<=0)continue;const dmg=dealEnemyDamage(extra,raw,true);extra.hit=.12;showDamageNumber(extra.x,extra.y-extra.r,dmg,crit);}
   }
   rewardDefeatedEnemies();
   const rapid=Math.max(0,Math.floor(player.rapidShot||0));
-  for(let n=1;n<=rapid;n++)rapidShotQueue.push({at:elapsed+n*.2,fire:()=>{if(!running||!player||!aAthenaHero())return;const hits=enemies.filter(e=>e.hp>0&&Math.hypot(e.x-player.x,e.y-player.y)<=athenaReachFor(e));if(!hits.length)return;const closest=hits.reduce((a,b)=>((a.x-player.x)**2+(a.y-player.y)**2)<=((b.x-player.x)**2+(b.y-player.y)**2)?a:b);omegaAim=Math.atan2(closest.y-player.y,closest.x-player.x);player.athenaSpearUntil=elapsed+.14;athenaPallasThrust(closest);for(let i=0;i<count;i++){const e=hits[i%hits.length];if(e.hp<=0)continue;const dealt=dealEnemyDamage(e,player.atk,true);showDamageNumber(e.x,e.y-e.r,dealt,false);for(let j=1;j<=Math.max(0,player.pierce||0)&&j<hits.length;j++){const extra=hits[(i+j)%hits.length];if(extra===e||extra.hp<=0)continue;const dmg=dealEnemyDamage(extra,player.atk,true);showDamageNumber(extra.x,extra.y-extra.r,dmg,false);}}rewardDefeatedEnemies();}});
+  for(let n=1;n<=rapid;n++)rapidShotQueue.push({at:elapsed+n*.2,fire:()=>{if(!running||!player||!aAthenaHero())return;const hits=enemies.filter(e=>e.hp>0&&Math.hypot(e.x-player.x,e.y-player.y)<=athenaReachFor(e));if(!hits.length)return;const closest=hits.reduce((a,b)=>((a.x-player.x)**2+(a.y-player.y)**2)<=((b.x-player.x)**2+(b.y-player.y)**2)?a:b);omegaAim=Math.atan2(closest.y-player.y,closest.x-player.x);player.athenaSpearUntil=elapsed+.14;athenaPallasThrust(closest);for(let i=0;i<count;i++){const e=hits[i%hits.length];if(e.hp<=0)continue;const dealt=dealEnemyDamage(e,player.atk,true);showDamageNumber(e.x,e.y-e.r,dealt,false);athElemHit(e,i===0);for(let j=1;j<=Math.max(0,player.pierce||0)&&j<hits.length;j++){const extra=hits[(i+j)%hits.length];if(extra===e||extra.hp<=0)continue;const dmg=dealEnemyDamage(extra,player.atk,true);showDamageNumber(extra.x,extra.y-extra.r,dmg,false);}}rewardDefeatedEnemies();}});
   rapidShotQueue.sort((a,b)=>a.at-b.at);
   return;
  }
