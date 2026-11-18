@@ -1,8 +1,8 @@
-/* 神域之門 service worker（V1.4.187）
+/* 神域之門 service worker（V1.4.193）
    - index.html／頁面：網路優先（有網路就拿最新版，離線才用快取）→ 更新遊戲只要換 index.html
-   - assets.bin?v=版本：快取優先（版本號變了才重新下載，舊版本自動清掉）
+   - assets-N.bin?v=版本：快取優先（素材分成多個小於 25MB 的檔案；版本號變了才重新下載，舊版本自動清掉）
    - 其他同網域檔案（圖示、manifest、og.jpg）：快取優先，背景更新 */
-const CACHE = "realm-gate-v3";
+const CACHE = "realm-gate-v4";
 /* 安裝時先把頁面與目前版本的素材檔存起來，第一次開過之後就能離線遊玩 */
 self.addEventListener("install", e => {
   self.skipWaiting();
@@ -12,8 +12,8 @@ self.addEventListener("install", e => {
       if (!res.ok) return;
       const html = await res.clone().text();
       await c.put(new Request(new URL("./index.html", self.registration.scope).pathname), res);
-      const m = html.match(/var VER="(\w+)"/);
-      if (m) { const u = "./assets.bin?v=" + m[1]; if (!(await c.match(u))) await c.add(u); }
+      const m = html.match(/PARTS=(\[\[.*?\]\])/);
+      if (m) { for (const p of JSON.parse(m[1])) { const u = "./" + p[0]; if (!(await c.match(u))) await c.add(u); } }
       await c.addAll(["./manifest.json", "./icon-192.png", "./icon-512.png", "./icon-180.png"]).catch(() => {});
     } catch (_) {}
   }));
@@ -27,7 +27,7 @@ self.addEventListener("fetch", e => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
   const isPage = req.mode === "navigate" || url.pathname.endsWith("/") || url.pathname.endsWith("/index.html");
-  const isAssets = url.pathname.endsWith("/assets.bin");
+  const isAssets = /\/assets(-\d+)?\.bin$/.test(url.pathname);
   if (isPage) {
     e.respondWith(fetch(req, { cache: "no-store" }).then(res => {
       if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(new Request(url.pathname.endsWith("/") ? url.pathname + "index.html" : url.pathname), copy)); }
